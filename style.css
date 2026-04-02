@@ -1,12 +1,12 @@
 :root {
-    --bg:       #0e0e12;
-    --surface:  #16161d;
-    --card:     #1c1c25;
-    --border:   rgba(255,255,255,0.07);
+    --bg:       #0a0a0e;
+    --surface:  rgba(20, 20, 28, 0.55);
+    --card:     rgba(30, 30, 42, 0.55);
+    --border:   rgba(255,255,255,0.08);
     --accent:   #00c896;
     --accent-d: rgba(0,200,150,0.12);
     --white:    #eeeef5;
-    --muted:    rgba(238,238,245,0.42);
+    --muted:    rgba(238,238,245,0.5);
     --font:     'Inter', -apple-system, sans-serif;
     --mono:     'Fira Code', monospace;
     --r:        12px;
@@ -23,6 +23,27 @@ html, body {
     background: var(--bg);
     color: var(--white);
     -webkit-font-smoothing: antialiased;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    width: 150vw;
+    height: 150vh;
+    left: -25vw;
+    top: -25vh;
+    background: radial-gradient(circle at 50% 50%, rgba(0,200,150,0.05), transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(77,166,255,0.04), transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(252,81,133,0.03), transparent 50%);
+    z-index: -1;
+    pointer-events: none;
+    animation: drift 20s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+    0% { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.1) translate(-2%, 2%); }
 }
 
 /* ══ SHELL ══ */
@@ -40,20 +61,40 @@ html, body {
     align-items: center;
     gap: 6px;
     background: var(--surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--border);
     border-radius: var(--r);
     padding: 6px 10px;
 }
 
-.tabs__logo {
+.lang-toggle {
+    display: flex;
+    align-items: center;
+    background: rgba(0,0,0,0.25);
+    border-radius: 6px;
+    padding: 2px;
+    margin-right: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.lang-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--muted);
     font-family: var(--mono);
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    color: var(--accent);
-    padding: 0 10px 0 4px;
-    margin-right: 6px;
-    border-right: 1px solid var(--border);
-    letter-spacing: 0.5px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.lang-toggle button.active {
+    background: var(--card);
+    color: var(--white);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .tab {
@@ -105,10 +146,13 @@ html, body {
 /* ══ CONTENT AREA ══ */
 .content-area {
     background: var(--surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--border);
     border-radius: var(--r);
     overflow: hidden;
     position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
 }
 
 /* Panes */
@@ -564,12 +608,49 @@ html, body {
 
 /* ══ RESPONSIVE ══ */
 @media (max-width: 800px) {
-    html, body { overflow: auto; }
-    .shell { height: auto; grid-template-rows: auto auto; }
+    /* Keep shell 100dvh but heavily reduce outer padding */
+    .shell { 
+        height: 100dvh; 
+        padding: 0.5rem; 
+        grid-template-rows: 48px 1fr;
+        gap: 0.5rem;
+    }
+    
+    /* Allow tabs to scroll horizontally instead of squishing */
+    .tabs { 
+        overflow-x: auto; 
+        overflow-y: hidden;
+        padding: 4px;
+        scrollbar-width: none; /* Hide scrollbar */
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    
+    .tab { padding: 8px 12px; font-size: 0.8rem; }
+    
+    /* Grid collapses, sidebar hides */
     .grid { grid-template-columns: 1fr; }
     .sidebar { display: none; }
-    .pane { padding: 2rem 1.5rem; height: auto; }
-    .skill-grid { grid-template-columns: 1fr 1fr; }
+    
+    /* The content area itself scrolls now */
+    .content-area {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    /* Adjust pane for mobile scrolling layout */
+    .pane { 
+        padding: 1.5rem 1rem; 
+        height: auto; 
+        justify-content: flex-start;
+        min-height: 100%;
+    }
+    
+    /* Scale down huge text */
+    .pane__name { font-size: clamp(2rem, 8vw, 2.5rem); letter-spacing: -1.5px; }
+    .pane__title { font-size: clamp(1.5rem, 6vw, 2rem); }
+    
+    /* Single column grids */
+    .skill-grid { grid-template-columns: 1fr; }
     .projects-grid { grid-template-columns: 1fr; }
     .contact-grid { grid-template-columns: 1fr; }
 }
