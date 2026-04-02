@@ -15,12 +15,15 @@
 
     <!-- ── ABAS NO TOPO ── -->
     <nav class="tabs">
-        <span class="tabs__logo">BR</span>
-        <button class="tab active" data-tab="sobre">About</button>
-        <button class="tab" data-tab="habilidades">Skills</button>
-        <button class="tab" data-tab="lideranca">Leadership</button>
-        <button class="tab" data-tab="projetos">Projects</button>
-        <button class="tab" data-tab="contato">Contact</button>
+        <div class="lang-toggle">
+            <button id="btn-en" class="active">US</button>
+            <button id="btn-pt">BR</button>
+        </div>
+        <button class="tab active" data-tab="sobre" data-en="About" data-pt="Sobre mim">About</button>
+        <button class="tab" data-tab="habilidades" data-en="Skills" data-pt="Habilidades">Skills</button>
+        <button class="tab" data-tab="lideranca" data-en="Leadership" data-pt="Liderança">Leadership</button>
+        <button class="tab" data-tab="projetos" data-en="Projects" data-pt="Projetos">Projects</button>
+        <button class="tab" data-tab="contato" data-en="Contact" data-pt="Contato">Contact</button>
         <a href="https://github.com/righibe" target="_blank" class="tabs__icon"><i class="fab fa-github"></i></a>
         <a href="https://www.linkedin.com/in/bernardo-righi/" target="_blank" class="tabs__icon"><i class="fab fa-linkedin"></i></a>
     </nav>
@@ -33,77 +36,76 @@
 
             <!-- ABOUT -->
             <section class="pane active" id="tab-sobre">
-                <p class="pane__label">Back-End Engineer</p>
+                <p class="pane__label" data-en="Back-End Engineer" data-pt="Engenheiro Back-End">Back-End Engineer</p>
                 <h1 class="pane__name">Bernardo Righi.</h1>
-                <p class="pane__bio">
+                <p class="pane__bio" data-en="Two years building back-end systems, APIs, and automation tools using Python and Java. Computer Science student at Unisinos and co-founder of one of the largest programming communities in Brazil." data-pt="Dois anos desenvolvendo sistemas back-end, APIs e automações com Python e Java. Estudante de Ciência da Computação na Unisinos e cofundador de uma das maiores comunidades de programação do Brasil.">
                     Two years building back-end systems, APIs, and automation tools using Python and Java.
-                    Computer Science student at <a href="https://www.unisinos.br" target="_blank" class="ilink">Unisinos</a>
-                    and co-founder of one of the largest programming communities in Brazil.
+                    Computer Science student at Unisinos and co-founder of one of the largest programming communities in Brazil.
                 </p>
-                <p class="pane__bio">
+                <p class="pane__bio" data-en="Focused on system architecture, REST integration, SQL data manipulation, and delivering robust, scalable services — from design to production." data-pt="Especializado em arquitetura de sistemas, integração REST, manipulação de dados com SQL e construção de serviços robustos e escaláveis — do design à produção.">
                     Focused on system architecture, REST integration, SQL data manipulation,
                     and delivering robust, scalable services — from design to production.
                 </p>
                 <div class="pills">
-                    <span class="pill"><i class="fas fa-circle"></i> Portuguese — Native</span>
-                    <span class="pill"><i class="fas fa-circle"></i> English — Fluent</span>
-                    <span class="pill"><i class="fas fa-circle"></i> Spanish — Intermediate</span>
+                    <span class="pill"><i class="fas fa-circle"></i> <span data-en="Portuguese — Native" data-pt="Português — Nativo">Portuguese — Native</span></span>
+                    <span class="pill"><i class="fas fa-circle"></i> <span data-en="English — Fluent" data-pt="Inglês — Fluente">English — Fluent</span></span>
+                    <span class="pill"><i class="fas fa-circle"></i> <span data-en="Spanish — Intermediate" data-pt="Espanhol — Intermediário">Spanish — Intermediate</span></span>
                 </div>
                 <div class="cta-row">
-                    <a href="#" class="btn btn--solid" onclick="switchTab('contato'); return false;">Get in touch</a>
-                    <a href="https://github.com/righibe" target="_blank" class="btn btn--ghost">View GitHub</a>
+                    <a href="#" class="btn btn--solid" onclick="switchTab('contato'); return false;" data-en="Get in touch" data-pt="Entre em contato">Get in touch</a>
+                    <a href="https://github.com/righibe" target="_blank" class="btn btn--ghost" data-en="View GitHub" data-pt="Ver GitHub">View GitHub</a>
                 </div>
             </section>
 
             <!-- SKILLS -->
             <section class="pane" id="tab-habilidades">
-                <p class="pane__label">02 — Skills</p>
-                <h2 class="pane__title">What I work with.</h2>
+                <p class="pane__label" data-en="02 — Skills" data-pt="02 — Habilidades">02 — Skills</p>
+                <h2 class="pane__title" data-en="What I work with." data-pt="O que eu uso.">What I work with.</h2>
                 <div class="skill-grid">
                     <div class="skill-card">
                         <div class="skill-card__top"><i class="fab fa-python"></i><h3>Python</h3></div>
-                        <p>Flask, Django, bots, automation &amp; high-performance services</p>
+                        <p data-en="Flask, Django, bots, automation &amp; high-performance services" data-pt="Flask, Django, bots, automações e serviços de alto desempenho">Flask, Django, bots, automation &amp; high-performance services</p>
                     </div>
                     <div class="skill-card">
                         <div class="skill-card__top"><i class="fab fa-java"></i><h3>Java &amp; Spring Boot</h3></div>
-                        <p>System architecture, enterprise patterns &amp; service communication</p>
+                        <p data-en="System architecture, enterprise patterns &amp; service communication" data-pt="Arquitetura de sistemas, padrões enterprise e comunicação entre serviços">System architecture, enterprise patterns &amp; service communication</p>
                     </div>
                     <div class="skill-card">
-                        <div class="skill-card__top"><i class="fas fa-database"></i><h3>SQL &amp; Databases</h3></div>
-                        <p>Data modeling, optimized queries &amp; scalable storage design</p>
+                        <div class="skill-card__top"><i class="fas fa-database"></i><h3 data-en="SQL &amp; Databases" data-pt="SQL &amp; Bancos de Dados">SQL &amp; Databases</h3></div>
+                        <p data-en="Data modeling, optimized queries &amp; scalable storage design" data-pt="Modelagem de dados, consultas otimizadas e armazenamento escalável">Data modeling, optimized queries &amp; scalable storage design</p>
                     </div>
                     <div class="skill-card">
                         <div class="skill-card__top"><i class="fas fa-plug"></i><h3>REST APIs</h3></div>
-                        <p>Design, integration, authentication &amp; RESTful documentation</p>
+                        <p data-en="Design, integration, authentication &amp; RESTful documentation" data-pt="Design, integração, autenticação e documentação de APIs RESTful">Design, integration, authentication &amp; RESTful documentation</p>
                     </div>
                     <div class="skill-card">
-                        <div class="skill-card__top"><i class="fas fa-robot"></i><h3>Automation</h3></div>
-                        <p>Scripts, bots, scheduled pipelines &amp; system integration</p>
+                        <div class="skill-card__top"><i class="fas fa-robot"></i><h3 data-en="Automation" data-pt="Automação">Automation</h3></div>
+                        <p data-en="Scripts, bots, scheduled pipelines &amp; system integration" data-pt="Scripts, bots, pipelines agendados e integração de sistemas">Scripts, bots, scheduled pipelines &amp; system integration</p>
                     </div>
                     <div class="skill-card">
                         <div class="skill-card__top"><i class="fas fa-code"></i><h3>Web (HTML/CSS/JS)</h3></div>
-                        <p>Solid foundation for front/back-end integration &amp; UI development</p>
+                        <p data-en="Solid foundation for front/back-end integration &amp; UI development" data-pt="Base sólida para integração front/back-end e desenvolvimento de interfaces">Solid foundation for front/back-end integration &amp; UI development</p>
                     </div>
                     <div class="skill-card">
                         <div class="skill-card__top"><i class="fas fa-infinity"></i><h3>CI/CD</h3></div>
-                        <p>Pipelines with GitHub Actions, automated testing &amp; deployment flows</p>
+                        <p data-en="Pipelines with GitHub Actions, automated testing &amp; deployment flows" data-pt="Pipelines com GitHub Actions, testes automatizados e fluxos de deploy">Pipelines with GitHub Actions, automated testing &amp; deployment flows</p>
                     </div>
                     <div class="skill-card">
                         <div class="skill-card__top"><i class="fab fa-git-alt"></i><h3>Git &amp; GitHub</h3></div>
-                        <p>Version control, branching strategies &amp; collaborative workflows</p>
+                        <p data-en="Version control, branching strategies &amp; collaborative workflows" data-pt="Controle de versão, estratégias de branching e fluxos colaborativos">Version control, branching strategies &amp; collaborative workflows</p>
                     </div>
                     <div class="skill-card">
                         <div class="skill-card__top"><i class="fab fa-docker"></i><h3>Docker</h3></div>
-                        <p>Containerization of services for consistent dev &amp; production environments</p>
+                        <p data-en="Containerization of services for consistent dev &amp; production environments" data-pt="Containerização de serviços para ambientes consistentes de dev e produção">Containerization of services for consistent dev &amp; production environments</p>
                     </div>
                 </div>
             </section>
 
             <!-- LEADERSHIP -->
             <section class="pane" id="tab-lideranca">
-                <p class="pane__label">03 — Leadership</p>
-                <h2 class="pane__title">Beyond the code.</h2>
-                <p class="pane__bio">
+                <p class="pane__label" data-en="03 — Leadership" data-pt="03 — Liderança">03 — Leadership</p>
+                <h2 class="pane__title" data-en="Beyond the code." data-pt="Além do código.">Beyond the code.</h2>
+                <p class="pane__bio" data-en="Co-founder &amp; manager of one of the largest programming communities in Brazil — ranked among the Top 6 in the country. Responsible for technical organization, developer support, and strategic partnership management." data-pt="Cofundador e gestor de uma das maiores comunidades de programação do Brasil — classificada entre as Top 6 do país. Responsável pela organização técnica, suporte aos desenvolvedores e gestão de parcerias estratégicas.">
                     <strong>Co-founder &amp; manager</strong> of one of the largest programming communities in Brazil —
                     ranked among the <strong>Top 6 in the country</strong>. Responsible for technical organization,
                     developer support, and strategic partnership management.
@@ -112,22 +114,22 @@
                     <div class="pillar">
                         <div class="pillar__icon"><i class="fas fa-users"></i></div>
                         <div>
-                            <h4>Technical organization</h4>
-                            <p>Community management and developer-focused events</p>
+                            <h4 data-en="Technical organization" data-pt="Organização técnica">Technical organization</h4>
+                            <p data-en="Community management and developer-focused events" data-pt="Gestão de comunidade e eventos focados em desenvolvedores">Community management and developer-focused events</p>
                         </div>
                     </div>
                     <div class="pillar">
                         <div class="pillar__icon"><i class="fas fa-chalkboard-teacher"></i></div>
                         <div>
-                            <h4>Mentorship &amp; support</h4>
-                            <p>Guidance for developers growing their careers</p>
+                            <h4 data-en="Mentorship &amp; support" data-pt="Mentoria e suporte">Mentorship &amp; support</h4>
+                            <p data-en="Guidance for developers growing their careers" data-pt="Orientação para desenvolvedores alavancarem suas carreiras">Guidance for developers growing their careers</p>
                         </div>
                     </div>
                     <div class="pillar">
                         <div class="pillar__icon"><i class="fas fa-handshake"></i></div>
                         <div style="flex: 1;">
-                            <h4>Strategic partnerships</h4>
-                            <p>Collaborations with industry leaders to boost the community ecosystem:</p>
+                            <h4 data-en="Strategic partnerships" data-pt="Parcerias estratégicas">Strategic partnerships</h4>
+                            <p data-en="Collaborations with industry leaders to boost the community ecosystem:" data-pt="Colaborações com líderes do mercado para acelerar o ecossistema da comunidade:">Collaborations with industry leaders to boost the community ecosystem:</p>
                             <div class="partner-badges">
                                 <a href="https://www.alura.com.br" target="_blank" class="p-badge p-badge--alura">
                                     <svg viewBox="0 0 100 100" width="16" height="16" fill="currentColor"><path d="M50 0a50 50 0 100 100A50 50 0 0050 0zm21 72H29V28h42v44zM42 41h16v18H42V41z"/></svg>
@@ -145,16 +147,16 @@
 
             <!-- PROJECTS -->
             <section class="pane" id="tab-projetos">
-                <p class="pane__label">04 — Projects</p>
-                <h2 class="pane__title">What I've built.</h2>
+                <p class="pane__label" data-en="04 — Projects" data-pt="04 — Projetos">04 — Projects</p>
+                <h2 class="pane__title" data-en="What I've built." data-pt="O que construí.">What I've built.</h2>
                 <div class="projects-grid">
                     <!-- Project 1 -->
                     <a href="https://github.com/righibe/ci-cd-pipeline-python" target="_blank" class="proj-card">
                         <div class="proj-card__top">
                             <i class="fab fa-github"></i>
-                            <h3>CI/CD Pipeline in Python</h3>
+                            <h3 data-en="CI/CD Pipeline in Python" data-pt="Pipeline CI/CD em Python">CI/CD Pipeline in Python</h3>
                         </div>
-                        <p>Implementation of a full CI/CD pipeline using GitHub Actions for automated testing, linting, and deployment of Python applications, ensuring high code quality.</p>
+                        <p data-en="Implementation of a full CI/CD pipeline using GitHub Actions for automated testing, linting, and deployment of Python applications, ensuring high code quality." data-pt="Implementação de um pipeline CI/CD completo com GitHub Actions para testes e deploys automatizados em aplicações Python.">Implementation of a full CI/CD pipeline using GitHub Actions for automated testing, linting, and deployment of Python applications, ensuring high code quality.</p>
                         <div class="proj-card__tech">
                             <span>Python</span><span>GitHub Actions</span><span>CI/CD</span>
                         </div>
@@ -163,9 +165,9 @@
                     <a href="https://github.com/righibe/bot-discord-IAgenerativa" target="_blank" class="proj-card">
                         <div class="proj-card__top">
                             <i class="fab fa-discord"></i>
-                            <h3>Generative AI Discord Bot</h3>
+                            <h3 data-en="Generative AI Discord Bot" data-pt="Bot IA Generativa">Generative AI Discord Bot</h3>
                         </div>
-                        <p>A Discord bot integrated with Generative AI capabilities. It interacts with users in real-time, providing AI-generated responses and enriching server engagement.</p>
+                        <p data-en="A Discord bot integrated with Generative AI capabilities. It interacts with users in real-time, providing AI-generated responses and enriching server engagement." data-pt="Um bot integrado com IA Generativa, capaz de interagir em tempo real provendo respostas dinâmicas e engajamento automatizado em servidores.">A Discord bot integrated with Generative AI capabilities. It interacts with users in real-time, providing AI-generated responses and enriching server engagement.</p>
                         <div class="proj-card__tech">
                             <span>Python</span><span>Discord.py</span><span>LLMs</span>
                         </div>
@@ -174,9 +176,9 @@
                     <a href="https://github.com/righibe/bot-quetionario" target="_blank" class="proj-card">
                         <div class="proj-card__top">
                             <i class="fas fa-robot"></i>
-                            <h3>Questionnaire Bot</h3>
+                            <h3 data-en="Questionnaire Bot" data-pt="Bot de Questionários">Questionnaire Bot</h3>
                         </div>
-                        <p>An interactive bot designed to conduct questionnaires and polls dynamically. It handles user inputs smoothly and streamlines data collection.</p>
+                        <p data-en="An interactive bot designed to conduct questionnaires and polls dynamically. It handles user inputs smoothly and streamlines data collection." data-pt="Um bot desenhado especificamente para conduzir formulários e captar dados de usuários de forma robusta e persistente.">An interactive bot designed to conduct questionnaires and polls dynamically. It handles user inputs smoothly and streamlines data collection.</p>
                         <div class="proj-card__tech">
                             <span>Python</span><span>Automation</span><span>Bots</span>
                         </div>
@@ -185,9 +187,9 @@
                     <a href="https://github.com/righibe/Cadastro-pessoas" target="_blank" class="proj-card">
                         <div class="proj-card__top">
                             <i class="fab fa-java"></i>
-                            <h3>User Management System</h3>
+                            <h3 data-en="User Management System" data-pt="Sistema de Gestão de Usuários">User Management System</h3>
                         </div>
-                        <p>A robust Java-based application for managing user registrations. Features CRUD operations, object-oriented design, and efficient data handling.</p>
+                        <p data-en="A robust Java-based application for managing user registrations. Features CRUD operations, object-oriented design, and efficient data handling." data-pt="Um sistema orientado a objetos feito em Java para manter e gerir o registro de usuários com operações de CRUD completas.">A robust Java-based application for managing user registrations. Features CRUD operations, object-oriented design, and efficient data handling.</p>
                         <div class="proj-card__tech">
                             <span>Java</span><span>OOP</span><span>CRUD</span>
                         </div>
@@ -197,21 +199,21 @@
 
             <!-- CONTACT -->
             <section class="pane" id="tab-contato">
-                <p class="pane__label">05 — Contact</p>
-                <h2 class="pane__title">Let's talk.</h2>
-                <p class="pane__bio">Open to projects, collaborations, and opportunities. Reach out through any channel below.</p>
+                <p class="pane__label" data-en="05 — Contact" data-pt="05 — Contato">05 — Contact</p>
+                <h2 class="pane__title" data-en="Let's talk." data-pt="Bora conversar.">Let's talk.</h2>
+                <p class="pane__bio" data-en="Open to projects, collaborations, and opportunities. Reach out through any channel below." data-pt="Aberto para parcerias, projetos e novas oportunidades de trabalho.">Open to projects, collaborations, and opportunities. Reach out through any channel below.</p>
                 <div class="contact-grid">
                     <a href="mailto:bernardomicolrighi@outlook.com" class="clink">
                         <div class="clink__ic"><i class="fas fa-envelope"></i></div>
                         <div class="clink__info">
-                            <span class="clink__lbl">Personal Email</span>
+                            <span class="clink__lbl" data-en="Personal Email" data-pt="E-mail Pessoal">Personal Email</span>
                             <span class="clink__val">bernardomicolrighi@outlook.com</span>
                         </div>
                     </a>
                     <div class="clink">
                         <div class="clink__ic"><i class="fas fa-graduation-cap"></i></div>
                         <div class="clink__info">
-                            <span class="clink__lbl">Academic Email — <a href="https://www.unisinos.br" target="_blank" class="ilink ilink--sm" onclick="event.stopPropagation()">Unisinos</a></span>
+                            <span class="clink__lbl"><span data-en="Academic Email" data-pt="E-mail Acadêmico">Academic Email</span> — <a href="https://www.unisinos.br" target="_blank" class="ilink ilink--sm" onclick="event.stopPropagation()">Unisinos</a></span>
                             <a href="mailto:brighi@edu.unisinos.br" class="clink__val clink__val--link">brighi@edu.unisinos.br</a>
                         </div>
                     </div>
