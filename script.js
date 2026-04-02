@@ -6,6 +6,7 @@ const translatables = document.querySelectorAll('[data-en][data-pt]');
 function switchTab(id) {
     tabs.forEach(t  => t.classList.toggle('active',  t.dataset.tab === id));
     panes.forEach(p => p.classList.toggle('active', p.id === 'tab-' + id));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function switchLang(lang) {
