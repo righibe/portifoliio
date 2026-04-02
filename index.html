@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bernardo Righi — Back-End Engineer</title>
+    <meta name="description" content="Bernardo Righi — Back-End Engineer specialized in Python, Java, automation, and scalable systems.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="shell">
+
+    <!-- ── ABAS NO TOPO ── -->
+    <nav class="tabs">
+        <span class="tabs__logo">BR</span>
+        <button class="tab active" data-tab="sobre">About</button>
+        <button class="tab" data-tab="habilidades">Skills</button>
+        <button class="tab" data-tab="lideranca">Leadership</button>
+        <button class="tab" data-tab="projetos">Projects</button>
+        <button class="tab" data-tab="contato">Contact</button>
+        <a href="https://github.com/righibe" target="_blank" class="tabs__icon"><i class="fab fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/bernardo-righi/" target="_blank" class="tabs__icon"><i class="fab fa-linkedin"></i></a>
+    </nav>
+
+    <!-- ── GRADE PRINCPAL ── -->
+    <div class="grid">
+
+        <!-- COLUNA ESQUERDA: conteúdo das abas -->
+        <main class="content-area">
+
+            <!-- ABOUT -->
+            <section class="pane active" id="tab-sobre">
+                <p class="pane__label">Back-End Engineer</p>
+                <h1 class="pane__name">Bernardo Righi.</h1>
+                <p class="pane__bio">
+                    Two years building back-end systems, APIs, and automation tools using Python and Java.
+                    Computer Science student at <a href="https://www.unisinos.br" target="_blank" class="ilink">Unisinos</a>
+                    and co-founder of one of the largest programming communities in Brazil.
+                </p>
+                <p class="pane__bio">
+                    Focused on system architecture, REST integration, SQL data manipulation,
+                    and delivering robust, scalable services — from design to production.
+                </p>
+                <div class="pills">
+                    <span class="pill"><i class="fas fa-circle"></i> Portuguese — Native</span>
+                    <span class="pill"><i class="fas fa-circle"></i> English — Fluent</span>
+                    <span class="pill"><i class="fas fa-circle"></i> Spanish — Intermediate</span>
+                </div>
+                <div class="cta-row">
+                    <a href="#" class="btn btn--solid" onclick="switchTab('contato'); return false;">Get in touch</a>
+                    <a href="https://github.com/righibe" target="_blank" class="btn btn--ghost">View GitHub</a>
+                </div>
+            </section>
+
+            <!-- SKILLS -->
+            <section class="pane" id="tab-habilidades">
+                <p class="pane__label">02 — Skills</p>
+                <h2 class="pane__title">What I work with.</h2>
+                <div class="skill-grid">
+                    <div class="skill-card">
+                        <div class="skill-card__top"><i class="fab fa-python"></i><h3>Python</h3></div>
+                        <p>Flask, Django, bots, automation &amp; high-performance services</p>
+                    </div>
+                    <div class="skill-card">
+                        <div class="skill-card__top"><i class="fab fa-java"></i><h3>Java &amp; Spring Boot</h3></div>
+                        <p>System architecture, enterprise patterns &amp; service communication</p>
+                    </div>
+                    <div class="skill-card">
+                        <div class="skill-card__top"><i class="fas fa-database"></i><h3>SQL &amp; Databases</h3></div>
+                        <p>Data modeling, optimized queries &amp; scalable storage design</p>
+                    </div>
+                    <div class="skill-card">
+                        <div class="skill-card__top"><i class="fas fa-plug"></i><h3>REST APIs</h3></div>
+                        <p>Design, integration, authentication &amp; RESTful documentation</p>
+                    </div>
+                    <div class="skill-card">
+                        <div class="skill-card__top"><i class="fas fa-robot"></i><h3>Automation</h3></div>
+                        <p>Scripts, bots, scheduled pipelines &amp; system integration</p>
+                    </div>
+                    <div class="skill-card">
+                        <div class="skill-card__top"><i class="fas fa-code"></i><h3>Web (HTML/CSS/JS)</h3></div>
+                        <p>Solid foundation for front/back-end integration &amp; UI development</p>
+                    </div>
+                    <div class="skill-card">
+                        <div class="skill-card__top"><i class="fas fa-infinity"></i><h3>CI/CD</h3></div>
+                        <p>Pipelines with GitHub Actions, automated testing &amp; deployment flows</p>
+                    </div>
+                    <div class="skill-card">
+                        <div class="skill-card__top"><i class="fab fa-git-alt"></i><h3>Git &amp; GitHub</h3></div>
+                        <p>Version control, branching strategies &amp; collaborative workflows</p>
+                    </div>
+                    <div class="skill-card">
+                        <div class="skill-card__top"><i class="fab fa-docker"></i><h3>Docker</h3></div>
+                        <p>Containerization of services for consistent dev &amp; production environments</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LEADERSHIP -->
+            <section class="pane" id="tab-lideranca">
+                <p class="pane__label">03 — Leadership</p>
+                <h2 class="pane__title">Beyond the code.</h2>
+                <p class="pane__bio">
+                    <strong>Co-founder &amp; manager</strong> of one of the largest programming communities in Brazil —
+                    ranked among the <strong>Top 6 in the country</strong>. Responsible for technical organization,
+                    developer support, and strategic partnership management.
+                </p>
+                <div class="pillars">
+                    <div class="pillar">
+                        <div class="pillar__icon"><i class="fas fa-users"></i></div>
+                        <div>
+                            <h4>Technical organization</h4>
+                            <p>Community management and developer-focused events</p>
+                        </div>
+                    </div>
+                    <div class="pillar">
+                        <div class="pillar__icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <div>
+                            <h4>Mentorship &amp; support</h4>
+                            <p>Guidance for developers growing their careers</p>
+                        </div>
+                    </div>
+                    <div class="pillar">
+                        <div class="pillar__icon"><i class="fas fa-handshake"></i></div>
+                        <div style="flex: 1;">
+                            <h4>Strategic partnerships</h4>
+                            <p>Collaborations with industry leaders to boost the community ecosystem:</p>
+                            <div class="partner-badges">
+                                <a href="https://www.alura.com.br" target="_blank" class="p-badge p-badge--alura">
+                                    <svg viewBox="0 0 100 100" width="16" height="16" fill="currentColor"><path d="M50 0a50 50 0 100 100A50 50 0 0050 0zm21 72H29V28h42v44zM42 41h16v18H42V41z"/></svg>
+                                    Alura
+                                </a>
+                                <a href="https://www.hostinger.com.br" target="_blank" class="p-badge p-badge--hostinger">
+                                    <svg viewBox="0 0 100 100" width="16" height="16" fill="currentColor"><path d="M83 23H17C7 23 0 30 0 40v20c0 10 7 17 17 17h66c10 0 17-7 17-17V40c0-10-7-17-17-17zM50 64L31 46h11V36h16v10h11L50 64z"/></svg>
+                                    Hostinger
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROJECTS -->
+            <section class="pane" id="tab-projetos">
+                <p class="pane__label">04 — Projects</p>
+                <h2 class="pane__title">What I've built.</h2>
+                <div class="projects-grid">
+                    <!-- Project 1 -->
+                    <a href="https://github.com/righibe/ci-cd-pipeline-python" target="_blank" class="proj-card">
+                        <div class="proj-card__top">
+                            <i class="fab fa-github"></i>
+                            <h3>CI/CD Pipeline in Python</h3>
+                        </div>
+                        <p>Implementation of a full CI/CD pipeline using GitHub Actions for automated testing, linting, and deployment of Python applications, ensuring high code quality.</p>
+                        <div class="proj-card__tech">
+                            <span>Python</span><span>GitHub Actions</span><span>CI/CD</span>
+                        </div>
+                    </a>
+                    <!-- Project 2 -->
+                    <a href="https://github.com/righibe/bot-discord-IAgenerativa" target="_blank" class="proj-card">
+                        <div class="proj-card__top">
+                            <i class="fab fa-discord"></i>
+                            <h3>Generative AI Discord Bot</h3>
+                        </div>
+                        <p>A Discord bot integrated with Generative AI capabilities. It interacts with users in real-time, providing AI-generated responses and enriching server engagement.</p>
+                        <div class="proj-card__tech">
+                            <span>Python</span><span>Discord.py</span><span>LLMs</span>
+                        </div>
+                    </a>
+                    <!-- Project 3 -->
+                    <a href="https://github.com/righibe/bot-quetionario" target="_blank" class="proj-card">
+                        <div class="proj-card__top">
+                            <i class="fas fa-robot"></i>
+                            <h3>Questionnaire Bot</h3>
+                        </div>
+                        <p>An interactive bot designed to conduct questionnaires and polls dynamically. It handles user inputs smoothly and streamlines data collection.</p>
+                        <div class="proj-card__tech">
+                            <span>Python</span><span>Automation</span><span>Bots</span>
+                        </div>
+                    </a>
+                    <!-- Project 4 -->
+                    <a href="https://github.com/righibe/Cadastro-pessoas" target="_blank" class="proj-card">
+                        <div class="proj-card__top">
+                            <i class="fab fa-java"></i>
+                            <h3>User Management System</h3>
+                        </div>
+                        <p>A robust Java-based application for managing user registrations. Features CRUD operations, object-oriented design, and efficient data handling.</p>
+                        <div class="proj-card__tech">
+                            <span>Java</span><span>OOP</span><span>CRUD</span>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- CONTACT -->
+            <section class="pane" id="tab-contato">
+                <p class="pane__label">05 — Contact</p>
+                <h2 class="pane__title">Let's talk.</h2>
+                <p class="pane__bio">Open to projects, collaborations, and opportunities. Reach out through any channel below.</p>
+                <div class="contact-grid">
+                    <a href="mailto:bernardomicolrighi@outlook.com" class="clink">
+                        <div class="clink__ic"><i class="fas fa-envelope"></i></div>
+                        <div class="clink__info">
+                            <span class="clink__lbl">Personal Email</span>
+                            <span class="clink__val">bernardomicolrighi@outlook.com</span>
+                        </div>
+                    </a>
+                    <div class="clink">
+                        <div class="clink__ic"><i class="fas fa-graduation-cap"></i></div>
+                        <div class="clink__info">
+                            <span class="clink__lbl">Academic Email — <a href="https://www.unisinos.br" target="_blank" class="ilink ilink--sm" onclick="event.stopPropagation()">Unisinos</a></span>
+                            <a href="mailto:brighi@edu.unisinos.br" class="clink__val clink__val--link">brighi@edu.unisinos.br</a>
+                        </div>
+                    </div>
+                    <a href="https://wa.me/5551996011501" target="_blank" class="clink clink--wpp">
+                        <div class="clink__ic"><i class="fab fa-whatsapp"></i></div>
+                        <div class="clink__info">
+                            <span class="clink__lbl">WhatsApp</span>
+                            <span class="clink__val">+55 51 996 011 501</span>
+                        </div>
+                    </a>
+                    <a href="https://www.linkedin.com/in/bernardo-righi/" target="_blank" class="clink clink--li">
+                        <div class="clink__ic"><i class="fab fa-linkedin"></i></div>
+                        <div class="clink__info">
+                            <span class="clink__lbl">LinkedIn</span>
+                            <span class="clink__val">bernardo-righi</span>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- COLUNA DIREITA: avatar + code card -->
+        <aside class="sidebar">
+            <!-- Avatar -->
+            <div class="avatar">
+                <img src="avatar.png" alt="Bernardo Righi" class="avatar__img">
+                <div class="avatar__ring"></div>
+            </div>
+
+            <!-- Bloco de código -->
+            <div class="code-card">
+                <div class="code-card__bar">
+                    <span class="d d--r"></span>
+                    <span class="d d--y"></span>
+                    <span class="d d--g"></span>
+                    <span class="code-card__file">developer.py</span>
+                </div>
+                <pre class="code-card__body"><code><span class="kw">class</span> <span class="cls">Developer</span>:
+  <span class="kw">def</span> <span class="fn">__init__</span>(self):
+    self.name  = <span class="s">"Bernardo"</span>
+    self.years = <span class="n">2</span>
+    self.stack = [
+      <span class="s">"Python"</span>,
+      <span class="s">"Java"</span>,
+    ]
+    self.degree = <span class="s">"C.C."</span>
+    self.uni = <span class="s">"Unisinos"</span></code></pre>
+            </div>
+        </aside>
+
+    </div><!-- /grid -->
+
+</div><!-- /shell -->
+
+<script src="script.js"></script>
+</body>
+</html>
