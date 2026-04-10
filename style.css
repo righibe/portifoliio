@@ -539,6 +539,10 @@ body::before {
 .sidebar::-webkit-scrollbar { display: none; }
 
 /* Avatar */
+.avatar--mobile {
+    display: none;
+}
+
 .avatar {
     flex: 0 0 auto;
     aspect-ratio: 1;
@@ -642,40 +646,26 @@ body::before {
     
     .tab { padding: 8px 12px; font-size: 0.8rem; }
     
-    /* Grid reorders to show sidebar on top */
-    .grid { 
-        grid-template-columns: 1fr; 
-        grid-template-rows: auto 1fr;
-        gap: 0.8rem;
-    }
-
-    .sidebar {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        order: 1;
-        gap: 1rem;
-    }
-
+    /* Grid collapses, sidebar hides */
+    .grid { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    
+    /* The content area itself scrolls now */
     .content-area {
-        order: 2;
         overflow-y: auto;
         overflow-x: hidden;
     }
 
-    .code-card { 
-        display: none; 
+    .avatar--mobile {
+        display: block;
+        width: 120px;
+        height: 120px;
+        margin-bottom: 1rem;
     }
-
-    .avatar {
-        width: 80px;
-        height: 80px;
-    }
-
-    .avatar__ring {
-        inset: -4px;
-        border-width: 1px;
+    
+    .avatar--mobile .avatar__ring {
+        inset: -6px;
+        border-width: 1.5px;
     }
     
     /* Adjust pane for mobile scrolling layout */
