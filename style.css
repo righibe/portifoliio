@@ -616,6 +616,12 @@ body::before {
 .n   { color: #f2cc60; }
 
 /* ══ RESPONSIVE ══ */
+@media (max-width: 1024px) {
+    .grid { grid-template-columns: 1fr 220px; }
+    .skill-grid { grid-template-columns: repeat(2, 1fr); }
+    .pane__name { font-size: clamp(2rem, 5vw, 3rem); }
+}
+
 @media (max-width: 800px) {
     /* Keep shell 100dvh but heavily reduce outer padding */
     .shell { 
@@ -636,14 +642,40 @@ body::before {
     
     .tab { padding: 8px 12px; font-size: 0.8rem; }
     
-    /* Grid collapses, sidebar hides */
-    .grid { grid-template-columns: 1fr; }
-    .sidebar { display: none; }
-    
-    /* The content area itself scrolls now */
+    /* Grid reorders to show sidebar on top */
+    .grid { 
+        grid-template-columns: 1fr; 
+        grid-template-rows: auto 1fr;
+        gap: 0.8rem;
+    }
+
+    .sidebar {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        order: 1;
+        gap: 1rem;
+    }
+
     .content-area {
+        order: 2;
         overflow-y: auto;
         overflow-x: hidden;
+    }
+
+    .code-card { 
+        display: none; 
+    }
+
+    .avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .avatar__ring {
+        inset: -4px;
+        border-width: 1px;
     }
     
     /* Adjust pane for mobile scrolling layout */
@@ -662,4 +694,11 @@ body::before {
     .skill-grid { grid-template-columns: 1fr; }
     .projects-grid { grid-template-columns: 1fr; }
     .contact-grid { grid-template-columns: 1fr; }
+}
+
+/* For very small heights */
+@media (max-height: 600px) and (max-width: 800px) {
+    .avatar { width: 60px; height: 60px; }
+    .grid { gap: 0.4rem; }
+    .pane { padding: 1rem; }
 }
