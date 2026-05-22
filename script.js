@@ -1,219 +1,44 @@
 'use strict';
 
-// ── Refs ────────────────────────────────────────────────────
-const tabBtns      = document.querySelectorAll('.tab');
+// ── DOM Refs ────────────────────────────────────────────────
+const dockBtns     = document.querySelectorAll('.dock-item');
 const panes        = document.querySelectorAll('.pane');
 const langBtns     = document.querySelectorAll('.lang-toggle button');
-const translatables= document.querySelectorAll('[data-en],[data-pt]');
 const modalOverlay = document.getElementById('modal-overlay');
 const modalClose   = document.getElementById('modal-close');
 const modalContent = document.getElementById('modal-content');
-const cursorEl     = document.getElementById('cursor');
-const cursorRing   = document.getElementById('cursor-ring');
 const termText     = document.getElementById('term-text');
 const termPrev     = document.getElementById('term-prev');
 const termCwd      = document.getElementById('term-cwd');
+const btnClose     = document.querySelector('.ctrl-close');
 
 let currentLang = 'en';
+let gameActive  = false;
 
 // ════════════════════════════════════════════════════════════
-//  1 — NEURAL NETWORK CANVAS  (interactive, click-reactive)
-// ════════════════════════════════════════════════════════════
-const canvas = document.getElementById('neural-canvas');
-const ctx    = canvas.getContext('2d');
-
-let W, H;
-let particles = [];
-let ripples   = [];
-let mouse     = { x: -9999, y: -9999 };
-
-const CFG = {
-  count:      68,
-  connDist:   125,
-  mouseDist:  160,
-  speed:      0.28,
-  color:      '0,229,176',      // teal green
-  colorB:     '77,166,255',     // blue for mouse lines
-  colorRipple:'0,229,176',
-};
-
-// ── Particle ──
-class Particle {
-  constructor() { this.init(true); }
-  init(scattered = false) {
-    this.x   = scattered ? Math.random() * W : Math.random() * W;
-    this.y   = scattered ? Math.random() * H : -12;
-    this.vx  = (Math.random() - 0.5) * CFG.speed;
-    this.vy  = Math.random() * (CFG.speed * 0.8) + 0.06;
-    this.r   = Math.random() * 1.5 + 0.7;
-    this.op  = Math.random() * 0.45 + 0.18;
-    this.phi = Math.random() * Math.PI * 2;
-  }
-  update() {
-    const dx = this.x - mouse.x, dy = this.y - mouse.y;
-    const d  = Math.hypot(dx, dy);
-    if (d < CFG.mouseDist) {
-      const f = (1 - d / CFG.mouseDist) * 0.42;
-      this.vx += (dx / d) * f;
-      this.vy += (dy / d) * f;
-    }
-    this.vx *= 0.975;
-    this.vy *= 0.975;
-    this.x  += this.vx;
-    this.y  += this.vy;
-    this.phi += 0.02;
-    if (this.x < -14) this.x = W + 14;
-    if (this.x > W + 14) this.x = -14;
-    if (this.y > H + 14) this.init();
-  }
-  draw() {
-    const pw = Math.sin(this.phi) * 0.3;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.r + pw, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(${CFG.color},${this.op})`;
-    ctx.shadowBlur = 5;
-    ctx.shadowColor = `rgba(${CFG.color},0.45)`;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  }
-}
-
-// ── Click Ripple ──
-class Ripple {
-  constructor(x, y) {
-    this.x = x; this.y = y;
-    this.r = 0; this.maxR = 90;
-    this.life = 1;
-  }
-  update() {
-    this.r    += 2.8;
-    this.life -= 0.03;
-  }
-  draw() {
-    if (this.life <= 0) return;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(${CFG.colorRipple},${this.life * 0.55})`;
-    ctx.lineWidth = 1.4;
-    ctx.stroke();
-
-    // Inner ring
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.r * 0.5, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(${CFG.colorRipple},${this.life * 0.3})`;
-    ctx.lineWidth = 0.7;
-    ctx.stroke();
-  }
-  get dead() { return this.life <= 0 || this.r > this.maxR; }
-}
-
-function drawConnections() {
-  for (let i = 0; i < particles.length; i++) {
-    const p = particles[i];
-
-    // Particle ↔ particle
-    for (let j = i + 1; j < particles.length; j++) {
-      const q  = particles[j];
-      const d  = Math.hypot(p.x - q.x, p.y - q.y);
-      if (d < CFG.connDist) {
-        const a = (1 - d / CFG.connDist) * 0.3;
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(q.x, q.y);
-        ctx.strokeStyle = `rgba(${CFG.color},${a})`;
-        ctx.lineWidth = 0.7;
-        ctx.stroke();
-      }
-    }
-
-    // Particle ↔ mouse
-    const md = Math.hypot(p.x - mouse.x, p.y - mouse.y);
-    if (md < CFG.mouseDist) {
-      const a = (1 - md / CFG.mouseDist) * 0.5;
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      ctx.lineTo(mouse.x, mouse.y);
-      ctx.strokeStyle = `rgba(${CFG.colorB},${a})`;
-      ctx.lineWidth   = 1;
-      ctx.stroke();
-    }
-  }
-}
-
-function resizeCanvas() {
-  W = canvas.width  = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-}
-
-function buildParticles() {
-  particles = Array.from({ length: CFG.count }, () => new Particle());
-}
-
-function loop() {
-  ctx.clearRect(0, 0, W, H);
-  drawConnections();
-  particles.forEach(p => { p.update(); p.draw(); });
-
-  // Ripples
-  ripples = ripples.filter(r => !r.dead);
-  ripples.forEach(r => { r.update(); r.draw(); });
-
-  requestAnimationFrame(loop);
-}
-
-canvas.addEventListener('click', e => {
-  for (let i = 0; i < 3; i++) ripples.push(new Ripple(e.clientX, e.clientY));
-});
-
-window.addEventListener('resize', () => { resizeCanvas(); buildParticles(); });
-window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-
-resizeCanvas();
-buildParticles();
-loop();
-
-// ════════════════════════════════════════════════════════════
-//  2 — CUSTOM CURSOR
-// ════════════════════════════════════════════════════════════
-let cx = 0, cy = 0, rx = 0, ry = 0;
-
-document.addEventListener('mousemove', e => {
-  cx = e.clientX; cy = e.clientY;
-  cursorEl.style.left = cx + 'px';
-  cursorEl.style.top  = cy + 'px';
-});
-
-(function trackRing() {
-  rx += (cx - rx) * 0.13;
-  ry += (cy - ry) * 0.13;
-  cursorRing.style.left = rx + 'px';
-  cursorRing.style.top  = ry + 'px';
-  requestAnimationFrame(trackRing);
-})();
-
-// ════════════════════════════════════════════════════════════
-//  3 — TAB SWITCHING
+//  TAB SWITCHING (Dock)
 // ════════════════════════════════════════════════════════════
 function switchTab(id) {
-  tabBtns.forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  dockBtns.forEach(t => t.classList.toggle('active', t.dataset.tab === id));
   panes.forEach(p => {
-    const hit = p.id === 'tab-' + id;
-    if (hit) {
+    if (p.id === 'tab-' + id) {
       p.style.display = 'flex';
-      p.offsetHeight; // reflow for animation
+      p.offsetHeight; // reflow
       p.classList.add('active');
-      if (id === 'sobre')       animateCounters();
+      if (id === 'sobre') animateCounters();
     } else {
       p.classList.remove('active');
-      p.style.display = '';
+      p.style.display = 'none';
     }
   });
-}
 
-tabBtns.forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+  gameActive = (id === 'game');
+}
+dockBtns.forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+if(btnClose) btnClose.addEventListener('click', () => { document.querySelector('.window').style.display = 'none'; });
 
 // ════════════════════════════════════════════════════════════
-//  4 — LANGUAGE TOGGLE
+//  LANGUAGE TOGGLE
 // ════════════════════════════════════════════════════════════
 function switchLang(lang) {
   currentLang = lang;
@@ -226,42 +51,74 @@ function switchLang(lang) {
 langBtns.forEach(b => b.addEventListener('click', () => switchLang(b.id.replace('btn-',''))));
 
 // ════════════════════════════════════════════════════════════
-//  5 — PROJECT MODALS
+//  MODALS
 // ════════════════════════════════════════════════════════════
 function openProject(key) {
-  const p   = (window.PROJECTS || {})[key];
+  const p = window.PROJECTS[key];
   if (!p) return;
-  const l   = currentLang;
+  const l = currentLang;
   const ttl = l === 'pt' ? p.titlePt : p.titleEn;
   const dsc = l === 'pt' ? p.descPt  : p.descEn;
   const lnk = l === 'pt' ? 'Ver no GitHub' : 'View on GitHub';
 
   modalContent.innerHTML = `
     <div class="modal-header">
-      <i class="${p.icon}"></i>
-      <h2>${ttl}</h2>
+      <i class="${p.icon}"></i><h2>${ttl}</h2>
     </div>
     <p class="modal-desc">${dsc}</p>
     <div class="modal-tech">${p.tech.map(t => `<span>${t}</span>`).join('')}</div>
-    <pre class="modal-code">${esc(p.code)}</pre>
-    <a href="${p.link}" target="_blank" class="modal-link">
-      <i class="fab fa-github"></i>${lnk}
-    </a>`;
-
+    <pre class="modal-code">${p.code.replace(/</g,'&lt;')}</pre>
+    <a href="${p.link}" target="_blank" class="btn btn--solid"><i class="fab fa-github" style="margin-right:8px"></i>${lnk}</a>
+  `;
   modalOverlay.classList.add('open');
 }
-
 function closeModal() { modalOverlay.classList.remove('open'); }
 modalClose.addEventListener('click', closeModal);
 modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
 
 // ════════════════════════════════════════════════════════════
-//  6 — COUNTER ANIMATION
+//  TERMINAL TYPER (Fixed Layout)
+// ════════════════════════════════════════════════════════════
+const SESSIONS = [
+  ['~', 'python main.py'],
+  ['~/projects', 'git commit -m "fix layout bug"'],
+  ['~', 'docker compose up -d'],
+  ['~/api', 'uvicorn app:app --reload'],
+  ['~', 'htop'],
+  ['~', 'sudo systemctl restart nginx'],
+  ['~/projects', 'pytest -v'],
+];
+let si = 0, ci = 0, typing = true, paused = false;
+
+function tickTerminal() {
+  if (paused) return;
+  const [cwd, cmd] = SESSIONS[si];
+  termCwd.textContent = cwd;
+
+  if (typing) {
+    if (ci <= cmd.length) {
+      termText.textContent = cmd.slice(0, ci++);
+      setTimeout(tickTerminal, 60 + Math.random() * 40);
+    } else {
+      paused = true;
+      setTimeout(() => { paused = false; typing = false; tickTerminal(); }, 1500);
+    }
+  } else {
+    if (ci > 0) {
+      termText.textContent = cmd.slice(0, --ci);
+      setTimeout(tickTerminal, 25);
+    } else {
+      termPrev.textContent = `$ ${cmd}`;
+      si = (si + 1) % SESSIONS.length;
+      typing = true;
+      setTimeout(tickTerminal, 400);
+    }
+  }
+}
+setTimeout(tickTerminal, 500);
+
+// ════════════════════════════════════════════════════════════
+//  COUNTERS
 // ════════════════════════════════════════════════════════════
 let countersDone = false;
 function animateCounters() {
@@ -269,10 +126,9 @@ function animateCounters() {
   countersDone = true;
   document.querySelectorAll('[data-count]').forEach(el => {
     const target = +el.dataset.count;
-    const t0     = performance.now();
-    const dur    = 1100;
+    const t0 = performance.now();
     (function tick(now) {
-      const p = Math.min((now - t0) / dur, 1);
+      const p = Math.min((now - t0) / 1000, 1);
       const e = p < .5 ? 2*p*p : -1+(4-2*p)*p;
       el.textContent = Math.round(e * target);
       if (p < 1) requestAnimationFrame(tick);
@@ -281,95 +137,210 @@ function animateCounters() {
 }
 
 // ════════════════════════════════════════════════════════════
-//  7 — STAGGER CARD ENTRANCE (injected CSS)
+//  BACKGROUND PARTICLES (Interactive Fluid)
 // ════════════════════════════════════════════════════════════
-function setupStagger() {
-  const s = document.createElement('style');
-  s.textContent = `
-    .skill-card,.proj-card,.pillar,.clink {
-      opacity:0; transform:translateY(14px);
-    }
-    .pane.active .skill-card,
-    .pane.active .proj-card,
-    .pane.active .pillar,
-    .pane.active .clink {
-      animation: _cardIn .38s var(--ease) both;
-    }
-    @keyframes _cardIn {
-      from { opacity:0; transform:translateY(14px); }
-      to   { opacity:1; transform:translateY(0); }
-    }`;
-  document.head.appendChild(s);
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+let bgW, bgH;
+let particles = [];
+let mX = -9999, mY = -9999;
 
-  const delay = (sel, step) =>
-    document.querySelectorAll(sel).forEach((el,i) => el.style.animationDelay = `${i*step}ms`);
-
-  delay('.skill-card', 35);
-  delay('.proj-card',  50);
-  delay('.pillar',     60);
-  delay('.clink',      55);
+function resizeBg() {
+  bgW = bgCanvas.width = window.innerWidth;
+  bgH = bgCanvas.height = window.innerHeight;
 }
+window.addEventListener('resize', resizeBg);
+window.addEventListener('mousemove', e => { mX = e.clientX; mY = e.clientY; });
+resizeBg();
 
-// ════════════════════════════════════════════════════════════
-//  8 — TERMINAL TYPER  (Linux + Python + Git commands)
-// ════════════════════════════════════════════════════════════
-const SESSIONS = [
-  // [cwd, command, output?]
-  ['~',           'python main.py'],
-  ['~/projects',  'git status'],
-  ['~/projects',  'git add -A; git commit -m "fix: edge case"'],
-  ['~/projects',  'git push origin main'],
-  ['~',           'docker compose up -d'],
-  ['~',           'docker ps'],
-  ['~/api',       'uvicorn app:app --reload'],
-  ['~',           'htop'],
-  ['~',           'ls -la /var/log'],
-  ['~',           'sudo systemctl restart nginx'],
-  ['~/projects',  'pytest -v --tb=short'],
-  ['~',           'pip install openai langchain'],
-  ['~',           'cat /etc/os-release'],
-  ['~/api',       'curl localhost:8000/health'],
-  ['~',           'grep -r "TODO" . --include="*.py"'],
-  ['~/projects',  'black . && flake8 .'],
-  ['~',           'journalctl -u myapp -f'],
-  ['~',           'ssh bernardo@prod-server'],
-];
-
-let si = 0, ci = 0, typing = true, paused = false;
-
-function tick() {
-  if (paused) return;
-  const [cwd, cmd] = SESSIONS[si];
-  termCwd.textContent = cwd;
-
-  if (typing) {
-    if (ci <= cmd.length) {
-      termText.textContent = cmd.slice(0, ci++);
-      setTimeout(tick, 52 + Math.random() * 28);
-    } else {
-      paused = true;
-      setTimeout(() => {
-        paused  = false;
-        typing  = false;
-        tick();
-      }, 1700);
+class BgParticle {
+  constructor() {
+    this.x = Math.random() * bgW;
+    this.y = Math.random() * bgH;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = (Math.random() - 0.5) * 0.5;
+    this.baseSize = Math.random() * 1.5 + 0.5;
+  }
+  update() {
+    // Magnetic repel from mouse
+    const dx = mX - this.x;
+    const dy = mY - this.y;
+    const dist = Math.hypot(dx, dy);
+    
+    if (dist < 150) {
+      const force = (150 - dist) / 150;
+      this.vx -= (dx / dist) * force * 0.2;
+      this.vy -= (dy / dist) * force * 0.2;
     }
-  } else {
-    if (ci > 0) {
-      termText.textContent = cmd.slice(0, --ci);
-      setTimeout(tick, 22);
-    } else {
-      termPrev.textContent = `$ ${cmd}`;
-      si = (si + 1) % SESSIONS.length;
-      typing = true;
-      setTimeout(tick, 380);
-    }
+
+    // Friction and bounds
+    this.vx *= 0.98;
+    this.vy *= 0.98;
+    
+    // Add natural drift
+    this.x += this.vx + (Math.sin(Date.now() * 0.001 + this.y) * 0.1);
+    this.y += this.vy - 0.2;
+
+    if (this.y < -10) this.y = bgH + 10;
+    if (this.x < -10) this.x = bgW + 10;
+    if (this.x > bgW + 10) this.x = -10;
+  }
+  draw() {
+    bgCtx.fillStyle = 'rgba(0, 255, 204, 0.4)';
+    bgCtx.beginPath();
+    bgCtx.arc(this.x, this.y, this.baseSize, 0, Math.PI * 2);
+    bgCtx.fill();
   }
 }
 
+for (let i = 0; i < 150; i++) particles.push(new BgParticle());
+
+function loopBg() {
+  bgCtx.fillStyle = 'rgba(2, 4, 10, 0.3)'; // Trail effect
+  bgCtx.fillRect(0, 0, bgW, bgH);
+  
+  particles.forEach(p => {
+    p.update();
+    p.draw();
+  });
+  
+  // Connect close particles
+  bgCtx.lineWidth = 0.5;
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 80) {
+        bgCtx.strokeStyle = \`rgba(0, 255, 204, \${0.15 * (1 - dist/80)})\`;
+        bgCtx.beginPath();
+        bgCtx.moveTo(particles[i].x, particles[i].y);
+        bgCtx.lineTo(particles[j].x, particles[j].y);
+        bgCtx.stroke();
+      }
+    }
+  }
+
+  requestAnimationFrame(loopBg);
+}
+loopBg();
+
 // ════════════════════════════════════════════════════════════
-//  INIT
+//  SPACE SHOOTER GAME (Plays only inside Tab)
 // ════════════════════════════════════════════════════════════
-setupStagger();
-animateCounters();
-setTimeout(tick, 600);
+const sCanvas = document.getElementById('shooter-canvas');
+const sCtx = sCanvas.getContext('2d');
+const sBtn = document.getElementById('start-game-btn');
+const sOverlay = document.getElementById('game-overlay');
+const sScore = document.getElementById('game-score');
+
+let sW, sH;
+let gameRunning = false;
+let score = 0;
+let ship = { x: 0, y: 0, w: 20, h: 20 };
+let bullets = [];
+let enemies = [];
+let lastEnemyTime = 0;
+
+function resizeGame() {
+  const rect = sCanvas.parentElement.getBoundingClientRect();
+  sW = sCanvas.width = rect.width;
+  sH = sCanvas.height = rect.height;
+  if (!gameRunning) {
+    ship.x = sW / 2;
+    ship.y = sH - 40;
+  }
+}
+window.addEventListener('resize', resizeGame);
+
+sCanvas.addEventListener('mousemove', e => {
+  if (!gameRunning) return;
+  const rect = sCanvas.getBoundingClientRect();
+  ship.x = e.clientX - rect.left;
+});
+
+sCanvas.addEventListener('mousedown', () => {
+  if (!gameRunning) return;
+  bullets.push({ x: ship.x, y: ship.y - 10, v: 7 });
+});
+
+sBtn.addEventListener('click', () => {
+  sOverlay.classList.add('hidden');
+  gameRunning = true;
+  score = 0;
+  bullets = [];
+  enemies = [];
+  resizeGame();
+  requestAnimationFrame(loopGame);
+});
+
+function spawnEnemy(now) {
+  if (now - lastEnemyTime > 800) {
+    enemies.push({
+      x: Math.random() * (sW - 20) + 10,
+      y: -20,
+      v: Math.random() * 1.5 + 1.5,
+      r: Math.random() * 10 + 10
+    });
+    lastEnemyTime = now;
+  }
+}
+
+function loopGame(now) {
+  if (!gameRunning || !gameActive) return; // Pause if tab is changed
+
+  sCtx.clearRect(0, 0, sW, sH);
+
+  // Draw Ship
+  sCtx.fillStyle = '#00ffcc';
+  sCtx.beginPath();
+  sCtx.moveTo(ship.x, ship.y - ship.h);
+  sCtx.lineTo(ship.x - ship.w/2, ship.y);
+  sCtx.lineTo(ship.x + ship.w/2, ship.y);
+  sCtx.fill();
+
+  // Draw Bullets
+  sCtx.fillStyle = '#ff3366';
+  bullets.forEach((b, i) => {
+    b.y -= b.v;
+    sCtx.fillRect(b.x - 2, b.y, 4, 10);
+    if (b.y < -10) bullets.splice(i, 1);
+  });
+
+  // Draw Enemies & Collision
+  spawnEnemy(now);
+  sCtx.fillStyle = '#ffbd2e';
+  
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    let e = enemies[i];
+    e.y += e.v;
+    
+    // Draw Asteroid
+    sCtx.beginPath();
+    sCtx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+    sCtx.fill();
+
+    // Collision with bullet
+    for (let j = bullets.length - 1; j >= 0; j--) {
+      let b = bullets[j];
+      let dist = Math.hypot(e.x - b.x, e.y - b.y);
+      if (dist < e.r + 5) {
+        enemies.splice(i, 1);
+        bullets.splice(j, 1);
+        score += 10;
+        sScore.textContent = 'Score: ' + score;
+        break;
+      }
+    }
+
+    // Out of bounds
+    if (e && e.y > sH + 20) {
+      enemies.splice(i, 1);
+    }
+  }
+
+  requestAnimationFrame(loopGame);
+}
+
+// Ensure init sizing
+setTimeout(resizeGame, 100);
