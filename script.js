@@ -261,7 +261,8 @@ function renderPanel(key) {
       
       let iconHtml = "";
       if (key === "skills") {
-        const matchingIcon = skillIconsList.find(s => s.name === title || s.name === titleText || titleText.includes(s.name));
+        const englishName = typeof title === 'object' ? title.en : title;
+        const matchingIcon = skillIconsList.find(s => s.name === englishName);
         if (matchingIcon) {
           iconHtml = matchingIcon.url 
             ? `<div class="orbital-icon"><img src="${matchingIcon.url}" alt="${matchingIcon.name}" loading="lazy"></div>`
@@ -769,6 +770,8 @@ langItems.forEach(item => {
     if (hint) hint.textContent = currentLang === "pt" ? "Clique em um cluster neural ou use a navegação" : "Click a neural cluster or use the top navigation";
     const backHome = document.querySelector('[data-i18n="backHome"]');
     if (backHome) backHome.textContent = currentLang === "pt" ? "Voltar para a rede" : "Back to neural map";
+    const exploreExit = document.querySelector('[data-i18n="exploreExit"]');
+    if (exploreExit) exploreExit.textContent = currentLang === "pt" ? "Parar / Sair" : "Stop / Exit";
 
     navItems.forEach(nav => { nav.textContent = labelFor(nav.dataset.section); });
     buildNetwork();
