@@ -916,7 +916,8 @@ if (exploreExitBtn) {
 function drawBlackHole(cx, cy, t) {
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.rotate(-12 * Math.PI / 180 + t * 0.00015);
+  // No rotation for a stable, realistic black hole
+
 
   const radius = (width < 768 ? 55 : 90) * 0.6;
   
