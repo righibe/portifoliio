@@ -61,15 +61,34 @@
         <div class="istat"><strong>Top 6</strong><span data-i18n="statCommunity">Brazil dev community</span></div>
       </div>
 
+      <div class="identity__languages" style="display:flex; gap:16px; margin-top:20px; color:rgba(203, 213, 225, 0.92); font-family:var(--mono); font-size:0.85rem;">
+        <span>🇵🇹 Portuguese — Native</span>
+        <span>🇬🇧 English — Fluent</span>
+        <span>🇪🇸 Spanish — Intermediate</span>
+      </div>
+
       <div class="terminal" id="terminal">
         <div class="terminal__bar">
           <span class="terminal__dot" style="background:#ff5f57"></span>
           <span class="terminal__dot" style="background:#febc2e"></span>
           <span class="terminal__dot" style="background:#28c840"></span>
-          <span class="terminal__title">~/bernardo</span>
+          <span class="terminal__title">~/bernardo/developer.py</span>
         </div>
         <div class="terminal__body">
-          <span class="terminal__prompt">$ </span><span id="terminal-text"></span><span class="terminal__cursor">▋</span>
+<pre style="margin:0; padding:0; line-height:1.4; font-family:var(--mono); font-size:0.85rem;"><code><span style="color:#ff7b72;">class</span> <span style="color:#d2a8ff;">Developer</span>:
+  <span style="color:#ff7b72;">def</span> <span style="color:#d2a8ff;">__init__</span>(<span style="color:#79c0ff;">self</span>):
+    <span style="color:#79c0ff;">self</span>.name  = <span style="color:#a5d6ff;">"Bernardo"</span>
+    <span style="color:#79c0ff;">self</span>.years = <span style="color:#79c0ff;">2</span>
+    <span style="color:#79c0ff;">self</span>.stack = [
+      <span style="color:#a5d6ff;">"Python"</span>,
+      <span style="color:#a5d6ff;">"Java"</span>,
+      <span style="color:#a5d6ff;">"C"</span>,
+    ]
+    <span style="color:#79c0ff;">self</span>.degree = <span style="color:#a5d6ff;">"C.C."</span>
+    <span style="color:#79c0ff;">self</span>.uni = <span style="color:#a5d6ff;">"Unisinos"</span>
+
+<span style="color:#ff7b72;">if</span> __name__ == <span style="color:#a5d6ff;">"__main__"</span>:
+  Developer()</code></pre>
         </div>
       </div>
     </section>
@@ -94,7 +113,8 @@
     <div class="explore-hud" id="explore-hud" aria-hidden="true">
       <span>Exploration mode</span>
       <strong id="explore-score">0</strong>
-      <small>Move with mouse or arrow keys</small>
+      <small>Move with WASD</small>
+      <button id="explore-exit" style="margin-top:10px; padding:6px 12px; background:rgba(143,29,44,0.8); color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:var(--mono); font-size:0.8rem;">Stop / Exit</button>
     </div>
   </main>
 

@@ -496,17 +496,10 @@ function updateExplore(delta) {
 
   let ax = 0;
   let ay = 0;
-  if (keysDown.has("ArrowLeft") || keysDown.has("a")) ax -= 0.42;
-  if (keysDown.has("ArrowRight") || keysDown.has("d")) ax += 0.42;
-  if (keysDown.has("ArrowUp") || keysDown.has("w")) ay -= 0.42;
-  if (keysDown.has("ArrowDown") || keysDown.has("s")) ay += 0.42;
-
-  if (Math.abs(mouse.tx) < 999) {
-    ship.tx = mouse.tx;
-    ship.ty = mouse.ty;
-    ship.vx += (ship.tx - ship.x) * 0.002;
-    ship.vy += (ship.ty - ship.y) * 0.002;
-  }
+  if (keysDown.has("a")) ax -= 0.42;
+  if (keysDown.has("d")) ax += 0.42;
+  if (keysDown.has("w")) ay -= 0.42;
+  if (keysDown.has("s")) ay += 0.42;
 
   ship.vx += ax;
   ship.vy += ay;
@@ -734,44 +727,12 @@ window.addEventListener("resize", resize);
 resize();
 requestAnimationFrame(loop);
 
-// ─── Terminal typing animation ────────────────────────────────────────────
-const terminalCommands = [
-  "python manage.py runserver 8000",
-  'git commit -m "feat: neural interface v2"',
-  "docker-compose up -d --build",
-  "python bot.py --mode generative-ai",
-  "java -jar spring-app.jar --port 8080",
-  "python train.py --model llm --rag true",
-  "gh workflow run deploy.yml",
-  "curl -X POST /api/v1/generate -d '{\"prompt\": \"...\"}'",
-];
-
-let termIdx = 0;
-let termCharIdx = 0;
-let termTyping = true;
-let termPause = 0;
-const termText = document.getElementById("terminal-text");
-
-function updateTerminal() {
-  if (!termText) return;
-  if (termPause > 0) { termPause--; return; }
-  const cmd = terminalCommands[termIdx];
-  if (termTyping) {
-    if (termCharIdx < cmd.length) {
-      termText.textContent = cmd.slice(0, ++termCharIdx);
-    } else {
-      termTyping = false;
-      termPause = 90;
-    }
-  } else {
-    if (termCharIdx > 0) {
-      termText.textContent = cmd.slice(0, --termCharIdx);
-    } else {
-      termTyping = true;
-      termIdx = (termIdx + 1) % terminalCommands.length;
-      termPause = 18;
-    }
-  }
+// ─── Explore Mode Exit Button ────────────────────────────────────────────
+const exploreExitBtn = document.getElementById("explore-exit");
+if (exploreExitBtn) {
+  exploreExitBtn.addEventListener("click", () => {
+    exploreMode = false;
+    exploreHud.classList.remove("active");
+    exploreHud.setAttribute("aria-hidden", "true");
+  });
 }
-
-setInterval(updateTerminal, 38);
