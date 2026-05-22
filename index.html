@@ -19,12 +19,21 @@
   <div class="aura aura-two"></div>
 
   <header class="topbar">
-    <a class="signal" href="#" aria-label="Bernardo Righi home" data-section="about">
-      <span class="signal__mark"></span>
-      <span>Bernardo Righi</span>
-    </a>
+    <div class="signal-group">
+      <a class="signal" href="#" aria-label="Bernardo Righi home">
+        <span class="signal__mark"></span>
+        <span>Bernardo Righi</span>
+      </a>
+      <div class="signal-socials">
+        <a href="https://github.com/righibe" target="_blank" rel="noopener" class="signal-social" aria-label="GitHub">
+          <i class="fa-brands fa-github"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/bernardo-righi/" target="_blank" rel="noopener" class="signal-social" aria-label="LinkedIn">
+          <i class="fa-brands fa-linkedin"></i>
+        </a>
+      </div>
+    </div>
     <nav class="nav" aria-label="Portfolio sections">
-      <button class="nav__item" data-section="about">About</button>
       <button class="nav__item" data-section="skills">Skills</button>
       <button class="nav__item" data-section="leadership">Leadership</button>
       <button class="nav__item" data-section="projects">Projects</button>
@@ -41,11 +50,28 @@
       <div class="identity__photo">
         <img src="avatar.png" alt="Bernardo Righi">
       </div>
-      <p class="identity__eyebrow" data-i18n="heroEyebrow">Software Engineer | AI Systems | Community Builder</p>
+      <p class="identity__eyebrow" data-i18n="heroEyebrow">Software Developer | AI Systems | Community Builder</p>
       <h1 data-i18n="heroTitle">Bernardo Righi</h1>
       <p class="identity__copy">
         Back-end developer working with Python, Java, automation and intelligent systems.
       </p>
+      <div class="identity__stats">
+        <div class="istat"><strong>2+</strong><span data-i18n="statYears">years building</span></div>
+        <div class="istat"><strong>10+</strong><span data-i18n="statProjects">projects realized</span></div>
+        <div class="istat"><strong>Top 6</strong><span data-i18n="statCommunity">Brazil dev community</span></div>
+      </div>
+
+      <div class="terminal" id="terminal">
+        <div class="terminal__bar">
+          <span class="terminal__dot" style="background:#ff5f57"></span>
+          <span class="terminal__dot" style="background:#febc2e"></span>
+          <span class="terminal__dot" style="background:#28c840"></span>
+          <span class="terminal__title">~/bernardo</span>
+        </div>
+        <div class="terminal__body">
+          <span class="terminal__prompt">$ </span><span id="terminal-text"></span><span class="terminal__cursor">▋</span>
+        </div>
+      </div>
     </section>
 
     <aside class="section-panel" id="section-panel" aria-live="polite">
@@ -84,20 +110,6 @@
   <script>
     window.PORTFOLIO = {
       sections: {
-        about: {
-          kicker: { en: "Back-end profile", pt: "Perfil back-end" },
-          title: { en: "Back-end developer focused on useful, reliable systems.", pt: "Desenvolvedor back-end focado em sistemas úteis e confiáveis." },
-          text: {
-            en: "I build APIs, automations, bots and CRUD systems with Python and Java. I study Computer Science at Unisinos and like projects where code solves a concrete operational problem.",
-            pt: "Construo APIs, automações, bots e sistemas CRUD com Python e Java. Estudo Ciência da Computação na Unisinos e gosto de projetos em que o código resolve um problema operacional concreto."
-          },
-          stats: [
-            ["2+", { en: "years building", pt: "anos construindo" }],
-            ["10+", { en: "projects shipped", pt: "projetos entregues" }],
-            ["Top 6", { en: "Brazil dev community", pt: "comunidade dev no Brasil" }]
-          ],
-          chips: ["Python", "Java", "AI", "REST APIs", "Automation"]
-        },
         skills: {
           kicker: { en: "Capability cluster", pt: "Cluster de habilidades" },
           title: { en: "Back-end stack, automation and AI tooling.", pt: "Stack back-end, automação e ferramentas de IA." },
@@ -109,8 +121,8 @@
             ["Python", { en: "Django, Flask, scripts, bots and automations", pt: "Django, Flask, scripts, bots e automações" }],
             ["Java", { en: "OOP, CRUD, services and application structure", pt: "OOP, CRUD, serviços e estrutura de aplicação" }],
             ["Spring Boot", { en: "REST services, layers and enterprise patterns", pt: "Serviços REST, camadas e padrões enterprise" }],
-            [{ en: "AI & LLMs", pt: "IA & LLMs" }, { en: "OpenAI, Gemini, LangChain and RAG flows", pt: "OpenAI, Gemini, LangChain e fluxos RAG" }],
-            [{ en: "Databases", pt: "Bancos de dados" }, { en: "SQL, SQLite, modeling and query organization", pt: "SQL, SQLite, modelagem e organização de consultas" }],
+            [{ en: "AI, ML & LLMs", pt: "IA, ML & LLMs" }, { en: "OpenAI, Gemini, LangChain and RAG flows", pt: "OpenAI, Gemini, LangChain e fluxos RAG" }],
+            [{ en: "Databases", pt: "Bancos de dados" }, { en: "SQL, SQLite, PostgreSQL, modeling and query organization", pt: "SQL, SQLite, PostgreSQL, modelagem e organização de consultas" }],
             ["REST APIs", { en: "Routes, auth, integrations and response design", pt: "Rotas, autenticação, integrações e desenho de respostas" }],
             ["Docker", { en: "Containerized local environments and deploy support", pt: "Ambientes locais em containers e suporte a deploy" }],
             ["GitHub Actions", { en: "CI/CD workflows, checks and automated delivery", pt: "Fluxos CI/CD, checks e entrega automatizada" }],
@@ -130,12 +142,12 @@
             [{ en: "Partnerships", pt: "Parcerias" }, { en: "Collaborations with education and infrastructure brands", pt: "Parcerias com marcas de educação e infraestrutura" }]
           ],
           links: [
-            ["Alura", "https://www.alura.com.br"],
-            ["Hostinger", "https://www.hostinger.com.br"]
+            ["Alura", "https://www.alura.com.br", { en: "Online education platform", pt: "Plataforma de educação online" }],
+            ["Hostinger", "https://www.hostinger.com.br", { en: "Hosting & infrastructure", pt: "Hospedagem e infraestrutura" }]
           ]
         },
         projects: {
-          kicker: { en: "Shipped artifacts", pt: "Projetos entregues" },
+          kicker: { en: "Realized projects", pt: "Projetos realizados" },
           title: { en: "Projects with practical engineering decisions.", pt: "Projetos com decisões práticas de engenharia." },
           text: {
             en: "A compact view of projects involving automation, AI, CRUD architecture and delivery workflows.",
@@ -151,12 +163,10 @@
             pt: "Aberto a projetos, colaborações e oportunidades envolvendo back-end, automação e IA."
           },
           links: [
-            ["Email", "bernardomicolrighi@outlook.com", "mailto:bernardomicolrighi@outlook.com"],
-            ["Academic Email", "brighi@edu.unisinos.br", "mailto:brighi@edu.unisinos.br"],
-            ["Unisinos", "Site oficial", "https://www.unisinos.br"],
-            ["LinkedIn", "bernardo-rig", "https://www.linkedin.com/in/bernardo-rig/"],
-            ["GitHub", "righibe", "https://github.com/righibe"],
-            ["WhatsApp", "+55 51 996 011 501", "https://wa.me/5551996011501"]
+            ["Email", "bernardomicolrighi@outlook.com", "mailto:bernardomicolrighi@outlook.com", "fa-solid fa-envelope"],
+            [{ en: "Academic Email", pt: "E-mail Acadêmico" }, "brighi@edu.unisinos.br", "mailto:brighi@edu.unisinos.br", "fa-solid fa-building-columns"],
+            ["LinkedIn", "Bernardo Righi", "https://www.linkedin.com/in/bernardo-righi/", "fa-brands fa-linkedin"],
+            ["WhatsApp", "+55 51 996 011 501", "https://wa.me/5551996011501", "fa-brands fa-whatsapp"]
           ]
         }
       },

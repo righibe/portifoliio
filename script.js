@@ -16,8 +16,8 @@ const exploreScore = document.getElementById("explore-score");
 
 const sections = window.PORTFOLIO.sections;
 const projects = window.PORTFOLIO.projects;
-const keys = ["about", "skills", "leadership", "projects", "contact"];
-const colors = ["#E5E7EB", "#8FAEFF", "#D1D5DB", "#BFC7D5", "#8F1D2C"];
+const keys = ["skills", "leadership", "projects", "contact"];
+const colors = ["#8FAEFF", "#D1D5DB", "#BFC7D5", "#8F1D2C"];
 
 let width = 0;
 let height = 0;
@@ -27,7 +27,7 @@ let currentLang = "en";
 let hoverNode = null;
 let time = 0;
 let mouse = { x: -999, y: -999, tx: -999, ty: -999, down: false };
-let camera = { x: 0, y: 0, tx: 0, ty: 0 };
+let camera = { x: 0, y: 0, tx: 0, ty: 0, scale: 1, targetScale: 1, cx: 0, cy: 0 };
 let nodes = [];
 let filaments = [];
 let sparks = [];
@@ -39,12 +39,11 @@ let keysDown = new Set();
 const bootTime = performance.now();
 
 const clusterLayout = {
-  about: { x: 0.47, y: 0.44, r: 94 },
-  skills: { x: 0.63, y: 0.27, r: 88 },
-  leadership: { x: 0.67, y: 0.58, r: 84 },
-  projects: { x: 0.55, y: 0.74, r: 92 },
-  contact: { x: 0.36, y: 0.68, r: 82 },
-  secret: { x: 0.28, y: 0.18, r: 28 }
+  skills:     { x: 0.55, y: 0.22, r: 110 },
+  leadership: { x: 0.75, y: 0.45, r: 105 },
+  projects:   { x: 0.60, y: 0.80, r: 115 },
+  contact:    { x: 0.45, y: 0.55, r: 95 },
+  secret:     { x: 0.35, y: 0.25, r: 35 }
 };
 
 function resize() {
@@ -67,7 +66,7 @@ function buildNetwork() {
   sparks = [];
   keys.forEach((key, clusterIndex) => {
     const cluster = clusterLayout[key];
-    const count = key === "about" ? 19 : 14;
+    const count = 14;
     const cx = cluster.x * width;
     const cy = cluster.y * height;
 
@@ -158,8 +157,8 @@ function makeNode(options) {
 
 function labelFor(key) {
   const labels = {
-    en: { about: "About", skills: "Skills", leadership: "Leadership", projects: "Projects", contact: "Contact" },
-    pt: { about: "Sobre", skills: "Skills", leadership: "Liderança", projects: "Projetos", contact: "Contato" }
+    en: { skills: "Skills", leadership: "Leadership", projects: "Projects", contact: "Contact" },
+    pt: { skills: "Skills", leadership: "Liderança", projects: "Projetos", contact: "Contato" }
   };
   return labels[currentLang][key];
 }
@@ -182,8 +181,11 @@ function setActiveSection(key) {
 
   const core = nodes.find(node => node.key === key && node.core);
   if (core) {
-    camera.tx = (width * 0.52 - core.baseX) * 0.035;
-    camera.ty = (height * 0.5 - core.baseY) * 0.035;
+    camera.tx = (width * 0.65 - core.baseX);
+    camera.ty = (height * 0.5 - core.baseY);
+    camera.targetScale = 2.2;
+    camera.cx = core.baseX;
+    camera.cy = core.baseY;
     core.size = 12;
   }
 
@@ -202,55 +204,102 @@ function closeSection() {
   navItems.forEach(item => item.classList.remove("active"));
   camera.tx = 0;
   camera.ty = 0;
+  camera.targetScale = 1;
   mouse.tx = -999;
   mouse.ty = -999;
   hoverNode = null;
 }
 
+// ─── Skill icons list ──────────────────────────────────────────────────────
+const skillIconsList = [
+  { name: "Python",        url: "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/python/python-original.svg" },
+  { name: "Java",          url: "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/java/java-original.svg" },
+  { name: "Spring Boot",   url: "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/spring/spring-original.svg" },
+  { name: "AI, ML & LLMs", url: null, fa: "fa-solid fa-brain" },
+  { name: "Databases",     url: "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/postgresql/postgresql-original.svg" },
+  { name: "REST APIs",     url: "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/fastapi/fastapi-original.svg" },
+  { name: "Docker",        url: "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/docker/docker-original.svg" },
+  { name: "GitHub Actions",url: "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/github/github-original.svg" },
+  { name: "Linux",         url: "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/linux/linux-original.svg" }
+];
+
 function renderPanel(key) {
   const data = sections[key];
   panelKicker.textContent = t(data.kicker);
   let html = `<h2 class="panel-title">${t(data.title)}</h2>`;
+  html += `<p class="panel-text">${t(data.text)}</p>`;
 
-  if (key === "about") {
+  // ── Leadership: community card ───────────────────────────────────────────
+  if (key === "leadership") {
+    const membersLabel = currentLang === "pt" ? "membros" : "members";
+    const communityDesc = currentLang === "pt"
+      ? "Uma das maiores comunidades de programadores do Brasil no Discord — mais de 20 mil membros ativos."
+      : "One of the largest programming communities in Brazil on Discord — over 20,000 active members.";
+    const inviteLabel = currentLang === "pt" ? "Entrar na comunidade" : "Join the community";
     html += `
-      <div class="about-layout">
-        <div class="about-photo"><img src="avatar.png" alt="Bernardo Righi"></div>
-        <div><p class="panel-text">${t(data.text)}</p></div>
-      </div>
-    `;
-  } else {
-    html += `<p class="panel-text">${t(data.text)}</p>`;
-  }
-
-  if (data.stats) {
-    html += `<div class="stat-flow">${data.stats.map(([value, label]) => `<div class="stat"><strong>${value}</strong><span>${t(label)}</span></div>`).join("")}</div>`;
-  }
-
-  if (data.chips) {
-    html += `<div class="chip-cloud">${data.chips.map(chip => `<span class="chip">${chip}</span>`).join("")}</div>`;
+      <div class="community-card stagger-item" style="animation-delay: 100ms">
+        <div class="community-img">
+          <img src="community.png" alt="Programadores community">
+        </div>
+        <div class="community-info">
+          <div class="community-badge">20k+ ${membersLabel}</div>
+          <h3>Programadores</h3>
+          <p>${communityDesc}</p>
+          <a href="https://discord.gg/programadores" target="_blank" rel="noopener" class="community-invite">
+            <i class="fa-brands fa-discord"></i> ${inviteLabel}
+          </a>
+        </div>
+      </div>`;
   }
 
   if (data.groups) {
-    html += `<div class="orbital-list">${data.groups.map(([title, desc]) => {
+    const listClass = key === "leadership" ? "leadership-list" : "orbital-list";
+    const baseDelay = key === "leadership" ? 160 : 100;
+    html += `<div class="${listClass}">${data.groups.map(([title, desc], index) => {
       const titleText = t(title);
+      
+      let iconHtml = "";
+      if (key === "skills") {
+        const matchingIcon = skillIconsList.find(s => s.name === title || s.name === titleText || titleText.includes(s.name));
+        if (matchingIcon) {
+          iconHtml = matchingIcon.url 
+            ? `<div class="orbital-icon"><img src="${matchingIcon.url}" alt="${matchingIcon.name}" loading="lazy"></div>`
+            : `<div class="orbital-icon fa-icon"><i class="${matchingIcon.fa}"></i></div>`;
+        }
+      } else if (key === "leadership") {
+        if (titleText.toLowerCase().includes(currentLang === "pt" ? "arquitetura" : "architecture")) {
+           iconHtml = `<div class="orbital-icon fa-icon"><i class="fa-solid fa-sitemap"></i></div>`;
+        } else if (titleText.toLowerCase().includes(currentLang === "pt" ? "mentoria" : "mentorship")) {
+           iconHtml = `<div class="orbital-icon fa-icon"><i class="fa-solid fa-users-rays"></i></div>`;
+        } else if (titleText.toLowerCase().includes(currentLang === "pt" ? "parcerias" : "partnerships")) {
+           iconHtml = `<div class="orbital-icon fa-icon"><i class="fa-solid fa-handshake"></i></div>`;
+        }
+      }
+
       const isPartnerships = key === "leadership" && titleText.toLowerCase().includes(currentLang === "pt" ? "parcerias" : "partnerships");
       const partners = isPartnerships && data.links
-        ? `<div class="partner-links">${data.links.map(([label, href]) => `<a class="partner-link" href="${href}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i>${label}</a>`).join("")}</div>`
+        ? `<div class="partner-cards">${data.links.map(([label, href, subtitle]) =>
+            `<a class="partner-card-item" href="${href}" target="_blank" rel="noopener">
+              <div class="partner-card-info"><strong>${label}</strong><span>${t(subtitle)}</span></div>
+              <div class="partner-card-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+            </a>`
+          ).join("")}</div>`
         : "";
-      return `<div class="orbital-item"><strong>${titleText}</strong><span>${t(desc)}</span>${partners}</div>`;
+      return `<div class="orbital-item stagger-item ${iconHtml ? 'has-icon' : ''}" style="animation-delay: ${baseDelay + index * 50}ms">${iconHtml}<div class="orbital-item-content"><strong>${titleText}</strong><span>${t(desc)}</span>${partners}</div></div>`;
     }).join("")}</div>`;
   }
 
   if (data.projects) {
-    html += `<div class="project-flow">${data.projects.map(projectKey => {
+    html += `<div class="project-flow">${data.projects.map((projectKey, index) => {
       const project = projects[projectKey];
-      return `<button class="project-card" data-project="${projectKey}"><i class="${project.icon}"></i><strong>${project.title}</strong><span>${project.tech.join(" / ")}</span><p>${t(project.desc)}</p><small>${t(project.impact)}</small></button>`;
+      return `<button class="project-card stagger-item" style="animation-delay: ${100 + index * 50}ms" data-project="${projectKey}"><i class="${project.icon}"></i><strong>${project.title}</strong><span>${project.tech.join(" / ")}</span><p>${t(project.desc)}</p><small>${t(project.impact)}</small></button>`;
     }).join("")}</div>`;
   }
 
   if (data.links && key === "contact") {
-    html += `<div class="contact-flow">${data.links.map(([label, value, href]) => `<a class="contact-link" href="${href}" target="_blank" rel="noopener"><span>${label}</span>${value}</a>`).join("")}</div>`;
+    html += `<div class="contact-flow">${data.links.map(([label, value, href, icon], index) =>
+      `<a class="contact-link stagger-item" style="animation-delay: ${100 + index * 50}ms" href="${href}" target="_blank" rel="noopener"><div class="contact-icon-wrapper"><i class="${icon}"></i></div><div class="contact-info"><span>${t(label)}:</span><strong>${value}</strong></div></a>`
+    ).join("")}</div>`;
   }
 
   panelContent.innerHTML = html;
@@ -297,6 +346,7 @@ function updateNetwork(delta) {
   mouse.y += (mouse.ty - mouse.y) * 0.12;
   camera.x += (camera.tx - camera.x) * 0.045;
   camera.y += (camera.ty - camera.y) * 0.045;
+  camera.scale += (camera.targetScale - camera.scale) * 0.045;
 
   hoverNode = null;
   let nearest = Infinity;
@@ -351,11 +401,22 @@ function drawNetwork() {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 
+  ctx.save();
+  if (camera.scale !== 1) {
+    const pivotX = width * 0.65;
+    const pivotY = height * 0.5;
+    ctx.translate(pivotX, pivotY);
+    ctx.scale(camera.scale, camera.scale);
+    ctx.translate(-pivotX, -pivotY);
+  }
+
   sparks.forEach(spark => {
     ctx.beginPath();
     const redSpark = spark.red ? "143, 29, 44" : "230, 236, 246";
+    const px = camera.scale > 1 ? spark.x + (width/2 - spark.x) * (1 - 1/camera.scale) * 0.6 : spark.x;
+    const py = camera.scale > 1 ? spark.y + (height/2 - spark.y) * (1 - 1/camera.scale) * 0.6 : spark.y;
     ctx.fillStyle = `rgba(${redSpark}, ${spark.alpha * 0.62})`;
-    ctx.arc(spark.x, spark.y, spark.size, 0, Math.PI * 2);
+    ctx.arc(px, py, spark.size / (camera.scale > 1 ? (camera.scale * 0.7) : 1), 0, Math.PI * 2);
     ctx.fill();
   });
 
@@ -403,9 +464,12 @@ function drawNetwork() {
     if (node.core && (!node.secret || hover)) {
       ctx.font = "500 12px JetBrains Mono, monospace";
       ctx.fillStyle = active || hover || node.secret ? "rgba(245, 247, 251, 0.9)" : "rgba(226, 232, 240, 0.5)";
+      // Offset text slightly so it scales smoothly from the center of the node
       ctx.fillText(node.label, node.x + 18, node.y - 14);
     }
   });
+
+  ctx.restore();
 }
 
 function pointLineDistance(px, py, x1, y1, x2, y2) {
@@ -561,7 +625,10 @@ canvas.addEventListener("mouseleave", () => {
 
 canvas.addEventListener("click", () => {
   const target = hoverNode || getClickableNode(mouse.tx, mouse.ty);
-  if (!target) return;
+  if (!target) {
+    if (activeSection) closeSection();
+    return;
+  }
   if (target.secret) {
     activateExploreMode();
     return;
@@ -612,12 +679,29 @@ langItems.forEach(item => {
     currentLang = item.dataset.lang;
     langItems.forEach(button => button.classList.toggle("active", button === item));
     document.documentElement.lang = currentLang === "pt" ? "pt-BR" : "en";
-    document.querySelector('[data-i18n="heroEyebrow"]').textContent = currentLang === "pt" ? "Engenharia de Software | Sistemas de IA | Comunidade" : "Software Engineer | AI Systems | Community Builder";
-    document.querySelector(".identity__copy").textContent = currentLang === "pt"
+
+    const heroEyebrow = document.querySelector('[data-i18n="heroEyebrow"]');
+    if (heroEyebrow) heroEyebrow.textContent = currentLang === "pt"
+      ? "Engenharia de Software | Sistemas de IA | Comunidade"
+      : "Software Engineer | AI Systems | Community Builder";
+
+    const identityCopy = document.querySelector(".identity__copy");
+    if (identityCopy) identityCopy.textContent = currentLang === "pt"
       ? "Desenvolvedor back-end trabalhando com Python, Java, automação e sistemas inteligentes."
       : "Back-end developer working with Python, Java, automation and intelligent systems.";
-    document.querySelector('[data-i18n="hint"]').textContent = currentLang === "pt" ? "Clique em um cluster neural ou use a navegação" : "Click a neural cluster or use the top navigation";
-    document.querySelector('[data-i18n="backHome"]').textContent = currentLang === "pt" ? "Voltar para a rede" : "Back to neural map";
+
+    const statYears = document.querySelector('[data-i18n="statYears"]');
+    if (statYears) statYears.textContent = currentLang === "pt" ? "anos construindo" : "years building";
+    const statProjects = document.querySelector('[data-i18n="statProjects"]');
+    if (statProjects) statProjects.textContent = currentLang === "pt" ? "projetos realizados" : "projects realized";
+    const statCommunity = document.querySelector('[data-i18n="statCommunity"]');
+    if (statCommunity) statCommunity.textContent = currentLang === "pt" ? "comunidade dev no Brasil" : "Brazil dev community";
+
+    const hint = document.querySelector('[data-i18n="hint"]');
+    if (hint) hint.textContent = currentLang === "pt" ? "Clique em um cluster neural ou use a navegação" : "Click a neural cluster or use the top navigation";
+    const backHome = document.querySelector('[data-i18n="backHome"]');
+    if (backHome) backHome.textContent = currentLang === "pt" ? "Voltar para a rede" : "Back to neural map";
+
     navItems.forEach(nav => { nav.textContent = labelFor(nav.dataset.section); });
     buildNetwork();
     if (activeSection) renderPanel(activeSection);
@@ -649,3 +733,45 @@ window.addEventListener("resize", resize);
 
 resize();
 requestAnimationFrame(loop);
+
+// ─── Terminal typing animation ────────────────────────────────────────────
+const terminalCommands = [
+  "python manage.py runserver 8000",
+  'git commit -m "feat: neural interface v2"',
+  "docker-compose up -d --build",
+  "python bot.py --mode generative-ai",
+  "java -jar spring-app.jar --port 8080",
+  "python train.py --model llm --rag true",
+  "gh workflow run deploy.yml",
+  "curl -X POST /api/v1/generate -d '{\"prompt\": \"...\"}'",
+];
+
+let termIdx = 0;
+let termCharIdx = 0;
+let termTyping = true;
+let termPause = 0;
+const termText = document.getElementById("terminal-text");
+
+function updateTerminal() {
+  if (!termText) return;
+  if (termPause > 0) { termPause--; return; }
+  const cmd = terminalCommands[termIdx];
+  if (termTyping) {
+    if (termCharIdx < cmd.length) {
+      termText.textContent = cmd.slice(0, ++termCharIdx);
+    } else {
+      termTyping = false;
+      termPause = 90;
+    }
+  } else {
+    if (termCharIdx > 0) {
+      termText.textContent = cmd.slice(0, --termCharIdx);
+    } else {
+      termTyping = true;
+      termIdx = (termIdx + 1) % terminalCommands.length;
+      termPause = 18;
+    }
+  }
+}
+
+setInterval(updateTerminal, 38);
