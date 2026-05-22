@@ -287,7 +287,7 @@ button {
 
 .identity__languages {
   display: flex;
-  gap: 12px;
+  gap: 24px;
   margin-top: 24px;
 }
 
@@ -1037,7 +1037,7 @@ button {
   transform: translateX(-50%) translateY(10px);
 }
 
-.explore-hud.active .explore-exit-btn {
+.explore-exit-btn.active {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }

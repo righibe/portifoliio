@@ -13,6 +13,7 @@ const modalContent = document.getElementById("modal-content");
 const modalClose = document.getElementById("modal-close");
 const exploreHud = document.getElementById("explore-hud");
 const exploreScore = document.getElementById("explore-score");
+const exploreExitBtn = document.getElementById("explore-exit");
 
 const sections = window.PORTFOLIO.sections;
 const projects = window.PORTFOLIO.projects;
@@ -344,6 +345,10 @@ function activateExploreMode() {
   exploreHud.classList.add("active");
   exploreHud.setAttribute("aria-hidden", "false");
   exploreScore.textContent = "0";
+  if (exploreExitBtn) {
+    exploreExitBtn.classList.add("active");
+    exploreExitBtn.setAttribute("aria-hidden", "false");
+  }
 }
 
 function updateNetwork(delta) {
@@ -792,6 +797,10 @@ window.addEventListener("keydown", event => {
       exploreMode = false;
       exploreHud.classList.remove("active");
       exploreHud.setAttribute("aria-hidden", "true");
+      if (exploreExitBtn) {
+        exploreExitBtn.classList.remove("active");
+        exploreExitBtn.setAttribute("aria-hidden", "true");
+      }
     }
   }
 });
@@ -806,11 +815,12 @@ resize();
 requestAnimationFrame(loop);
 
 // ─── Explore Mode Exit Button ────────────────────────────────────────────
-const exploreExitBtn = document.getElementById("explore-exit");
 if (exploreExitBtn) {
   exploreExitBtn.addEventListener("click", () => {
     exploreMode = false;
     exploreHud.classList.remove("active");
     exploreHud.setAttribute("aria-hidden", "true");
+    exploreExitBtn.classList.remove("active");
+    exploreExitBtn.setAttribute("aria-hidden", "true");
   });
 }
