@@ -29,6 +29,7 @@ let hoverNode = null;
 let time = 0;
 let mouse = { x: -999, y: -999, tx: -999, ty: -999, down: false };
 let camera = { x: 0, y: 0, tx: 0, ty: 0, scale: 1, targetScale: 1, cx: 0, cy: 0 };
+let asteroids = [];
 let nodes = [];
 let filaments = [];
 let sparks = [];
@@ -574,9 +575,19 @@ function updateExplore(delta) {
   ship.x = Math.max(24, Math.min(width - 24, ship.x + ship.vx * delta));
   ship.y = Math.max(92, Math.min(height - 28, ship.y + ship.vy * delta));
 
+  // Rotate ship smoothly
   if (Math.abs(ship.vx) > 0.1 || Math.abs(ship.vy) > 0.1) {
     ship.angle = Math.atan2(ship.vy, ship.vx) + Math.PI / 2;
   }
+
+  // Make astronauts drift more naturally using slight random acceleration
+  astronauts.forEach(a => {
+    a.vx += (Math.random() - 0.5) * 0.02;
+    a.vy += (Math.random() - 0.5) * 0.02;
+    a.vx *= 0.995;
+    a.vy *= 0.995;
+    a.spin += (Math.random() - 0.5) * 0.001;
+  });
 
   if (keysDown.has(" ")) {
     if (time - ship.lastShot > 180) {
@@ -905,7 +916,7 @@ if (exploreExitBtn) {
 function drawBlackHole(cx, cy, t) {
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.rotate(-12 * Math.PI / 180);
+  ctx.rotate(-12 * Math.PI / 180 + t * 0.00015);
 
   const radius = (width < 768 ? 55 : 90) * 0.6;
   
@@ -930,24 +941,27 @@ function drawBlackHole(cx, cy, t) {
   ctx.fillStyle = diskGrad;
   ctx.fill();
 
+  const innerScale = 1 + Math.sin(t * 0.002) * 0.04;
+  ctx.save();
+  ctx.scale(innerScale, innerScale);
   ctx.beginPath();
   ctx.ellipse(0, -radius * 0.1, radius * 1.45, radius * 1.5, 0, Math.PI, Math.PI * 2);
-  ctx.lineWidth = radius * 0.3;
+  ctx.restore();
+
   const topGrad = ctx.createLinearGradient(0, -radius * 1.7, 0, 0);
   topGrad.addColorStop(0, "rgba(255, 220, 150, 0.85)");
   topGrad.addColorStop(0.3, "rgba(255, 150, 40, 0.7)");
   topGrad.addColorStop(1, "rgba(200, 50, 0, 0)");
   ctx.strokeStyle = topGrad;
+  ctx.lineWidth = radius * 0.3;
   ctx.stroke();
 
-  ctx.beginPath();
-  ctx.ellipse(0, radius * 0.1, radius * 1.45, radius * 1.5, 0, 0, Math.PI);
-  ctx.lineWidth = radius * 0.2;
   const botGrad = ctx.createLinearGradient(0, radius * 1.7, 0, 0);
   botGrad.addColorStop(0, "rgba(255, 150, 50, 0.5)");
   botGrad.addColorStop(0.3, "rgba(200, 70, 10, 0.3)");
   botGrad.addColorStop(1, "rgba(100, 20, 0, 0)");
   ctx.strokeStyle = botGrad;
+  ctx.lineWidth = radius * 0.2;
   ctx.stroke();
 
   ctx.beginPath();
@@ -959,13 +973,15 @@ function drawBlackHole(cx, cy, t) {
   ctx.strokeStyle = "rgba(255, 240, 200, 0.3)";
   ctx.stroke();
 
+  ctx.save();
+  ctx.globalAlpha = 0.9 + Math.sin(t * 0.003) * 0.1;
   ctx.beginPath();
   ctx.ellipse(0, 0, radius * 3.8, radius * 0.45, 0, 0, Math.PI);
   ctx.fillStyle = diskGrad;
   ctx.shadowColor = "rgba(255, 200, 100, 0.5)";
   ctx.shadowBlur = 20;
   ctx.fill();
-  ctx.shadowBlur = 0;
+  ctx.restore();
 
   ctx.beginPath();
   ctx.ellipse(0, 0, radius * 3.4, radius * 0.08, 0, 0, Math.PI * 2);
