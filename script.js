@@ -48,6 +48,14 @@ const clusterLayout = {
   secret:     { x: 0.35, y: 0.25, r: 35 }
 };
 
+function getBezierPoint(t, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
+  const cX = 3 * (p1x - p0x), bX = 3 * (p2x - p1x) - cX, aX = p3x - p0x - cX - bX;
+  const cY = 3 * (p1y - p0y), bY = 3 * (p2y - p1y) - cY, aY = p3y - p0y - cY - bY;
+  const x = (aX * Math.pow(t, 3)) + (bX * Math.pow(t, 2)) + (cX * t) + p0x;
+  const y = (aY * Math.pow(t, 3)) + (bY * Math.pow(t, 2)) + (cY * t) + p0y;
+  return { x, y };
+}
+
 function resize() {
   dpr = Math.min(window.devicePixelRatio || 1, 2);
   width = window.innerWidth;
@@ -425,7 +433,15 @@ function drawNetwork() {
     const redSpark = spark.red ? "143, 29, 44" : "230, 236, 246";
     const px = camera.scale > 1 ? spark.x + (width/2 - spark.x) * (1 - 1/camera.scale) * 0.6 : spark.x;
     const py = camera.scale > 1 ? spark.y + (height/2 - spark.y) * (1 - 1/camera.scale) * 0.6 : spark.y;
-    ctx.fillStyle = `rgba(${redSpark}, ${spark.alpha * 0.62})`;
+    
+    ctx.moveTo(px - spark.vx * 16, py - spark.vy * 16);
+    ctx.lineTo(px, py);
+    ctx.strokeStyle = `rgba(${redSpark}, ${spark.alpha * 0.8})`;
+    ctx.lineWidth = spark.size / (camera.scale > 1 ? (camera.scale * 0.7) : 1);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${redSpark}, ${spark.alpha * 1.2})`;
     ctx.arc(px, py, spark.size / (camera.scale > 1 ? (camera.scale * 0.7) : 1), 0, Math.PI * 2);
     ctx.fill();
   });
@@ -442,13 +458,23 @@ function drawNetwork() {
     ctx.lineWidth = active ? 1.1 : 0.7;
     ctx.strokeStyle = `rgba(${stroke}, ${Math.min(alpha, 0.72)})`;
     ctx.moveTo(line.a.x, line.a.y);
-    ctx.quadraticCurveTo(
-      (line.a.x + line.b.x) / 2 + Math.sin(time * 0.001 + line.pulse) * 18,
-      (line.a.y + line.b.y) / 2 + Math.cos(time * 0.0012 + line.pulse) * 18,
-      line.b.x,
-      line.b.y
-    );
+    
+    const midX1 = line.a.x + (line.b.x - line.a.x) * 0.3 + Math.sin(time * 0.0015 + line.pulse) * 35;
+    const midY1 = line.a.y + (line.b.y - line.a.y) * 0.3 + Math.cos(time * 0.001 + line.pulse) * 35;
+    const midX2 = line.a.x + (line.b.x - line.a.x) * 0.7 - Math.cos(time * 0.0012 + line.pulse) * 35;
+    const midY2 = line.a.y + (line.b.y - line.a.y) * 0.7 - Math.sin(time * 0.0018 + line.pulse) * 35;
+    
+    ctx.bezierCurveTo(midX1, midY1, midX2, midY2, line.b.x, line.b.y);
     ctx.stroke();
+
+    if (active || nearMouse) {
+      const flowAlpha = (time * 0.0006 + line.pulse) % 1;
+      const pt = getBezierPoint(flowAlpha, line.a.x, line.a.y, midX1, midY1, midX2, midY2, line.b.x, line.b.y);
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(143, 180, 255, ${alpha * 1.8})`;
+      ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
   });
 
   nodes.forEach(node => {
@@ -466,15 +492,26 @@ function drawNetwork() {
     ctx.shadowBlur = 0;
 
     ctx.beginPath();
-    ctx.strokeStyle = hexToRgba(node.color, active || hover ? 0.36 : 0.15);
+    ctx.strokeStyle = hexToRgba(node.color, active || hover ? 0.45 : 0.2);
     ctx.lineWidth = 1;
-    ctx.arc(node.x, node.y, radius + 13 + Math.sin(time * 0.004) * 2, 0, Math.PI * 2);
+    ctx.arc(node.x, node.y, radius + 14 + Math.sin(time * 0.004 + node.baseX) * 3, 0, Math.PI * 2);
     ctx.stroke();
 
     if (node.core && (!node.secret || hover)) {
+      ctx.beginPath();
+      ctx.strokeStyle = hexToRgba(node.color, active || hover ? 0.7 : 0.3);
+      ctx.setLineDash([4, 6]);
+      ctx.arc(node.x, node.y, radius + 22 + Math.cos(time * 0.002 + node.baseY) * 5, time * 0.001, time * 0.001 + Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      ctx.beginPath();
+      ctx.strokeStyle = hexToRgba(node.color, 0.15);
+      ctx.arc(node.x, node.y, radius + 34 + Math.sin(time * 0.0015 + node.baseX) * 6, 0, Math.PI * 2);
+      ctx.stroke();
+
       ctx.font = "500 12px JetBrains Mono, monospace";
       ctx.fillStyle = active || hover || node.secret ? "rgba(245, 247, 251, 0.9)" : "rgba(226, 232, 240, 0.5)";
-      // Offset text slightly so it scales smoothly from the center of the node
       ctx.fillText(node.label, node.x + 18, node.y - 14);
     }
   });
@@ -779,7 +816,11 @@ langItems.forEach(item => {
     if (exploreExit) exploreExit.textContent = currentLang === "pt" ? "Parar / Sair" : "Stop / Exit";
 
     navItems.forEach(nav => { nav.textContent = labelFor(nav.dataset.section); });
-    buildNetwork();
+    nodes.forEach(node => {
+      if (node.core && node.key !== "secret") {
+        node.label = labelFor(node.key);
+      }
+    });
     if (activeSection) renderPanel(activeSection);
   });
 });
