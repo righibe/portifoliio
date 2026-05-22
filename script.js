@@ -912,85 +912,224 @@ if (exploreExitBtn) {
   });
 }
 
-// ─── Interstellar Elements ────────────────────────────────────────────────
+// ─── Interstellar Gargantua ───────────────────────────────────────────────
 function drawBlackHole(cx, cy, t) {
   ctx.save();
   ctx.translate(cx, cy);
-  // No rotation for a stable, realistic black hole
 
+  const R = (width < 768 ? 50 : 80);
+  const pulse = 1 + Math.sin(t * 0.0018) * 0.012;
 
-  const radius = (width < 768 ? 55 : 90) * 0.6;
-  
-  const glow = ctx.createRadialGradient(0, 0, radius, 0, 0, radius * 4.5);
-  glow.addColorStop(0, "rgba(255, 180, 80, 0.15)");
-  glow.addColorStop(0.4, "rgba(150, 50, 10, 0.05)");
-  glow.addColorStop(1, "rgba(0, 0, 0, 0)");
-  ctx.fillStyle = glow;
+  // ── 1. Deep ambient glow (warm haze surrounding everything) ─────────
+  const ambientR = R * 5.5;
+  const ambient = ctx.createRadialGradient(0, 0, R * 0.5, 0, 0, ambientR);
+  ambient.addColorStop(0, "rgba(255, 170, 60, 0.08)");
+  ambient.addColorStop(0.25, "rgba(200, 100, 20, 0.04)");
+  ambient.addColorStop(0.5, "rgba(120, 40, 5, 0.02)");
+  ambient.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = ambient;
   ctx.beginPath();
-  ctx.arc(0, 0, radius * 4.5, 0, Math.PI * 2);
+  ctx.arc(0, 0, ambientR, 0, Math.PI * 2);
   ctx.fill();
 
-  const diskGrad = ctx.createRadialGradient(0, 0, radius * 0.9, 0, 0, radius * 3.8);
-  diskGrad.addColorStop(0, "rgba(255, 255, 255, 1)");
-  diskGrad.addColorStop(0.15, "rgba(255, 220, 120, 1)");
-  diskGrad.addColorStop(0.35, "rgba(255, 120, 30, 0.8)");
-  diskGrad.addColorStop(0.7, "rgba(80, 10, 0, 0.3)");
-  diskGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-  
-  ctx.beginPath();
-  ctx.ellipse(0, 0, radius * 3.8, radius * 0.45, 0, Math.PI, Math.PI * 2);
-  ctx.fillStyle = diskGrad;
-  ctx.fill();
-
-  const innerScale = 1 + Math.sin(t * 0.002) * 0.04;
+  // ── 2. Outer accretion disk (behind the black hole) ─────────────────
+  // Back half of the disk - the part we see above the black hole
   ctx.save();
-  ctx.scale(innerScale, innerScale);
+  const diskW = R * 4.2 * pulse;
+  const diskH = R * 0.48;
+
+  // Outer cool layer (reddish-brown, very wide)
+  for (let layer = 0; layer < 3; layer++) {
+    const layerAlpha = 0.12 - layer * 0.03;
+    const layerW = diskW + layer * R * 0.6;
+    const layerH = diskH + layer * R * 0.05;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, layerW, layerH, 0, Math.PI, Math.PI * 2);
+    const outerGrad = ctx.createLinearGradient(-layerW, 0, layerW, 0);
+    outerGrad.addColorStop(0, `rgba(140, 160, 200, ${layerAlpha * 0.7})`);
+    outerGrad.addColorStop(0.3, `rgba(180, 100, 40, ${layerAlpha})`);
+    outerGrad.addColorStop(0.5, `rgba(220, 140, 50, ${layerAlpha * 1.2})`);
+    outerGrad.addColorStop(0.7, `rgba(255, 130, 30, ${layerAlpha})`);
+    outerGrad.addColorStop(1, `rgba(200, 60, 10, ${layerAlpha * 0.5})`);
+    ctx.fillStyle = outerGrad;
+    ctx.fill();
+  }
+
+  // Main bright accretion disk (back half)
+  const backDiskGrad = ctx.createRadialGradient(0, 0, R * 1.05, 0, 0, diskW);
+  backDiskGrad.addColorStop(0, "rgba(255, 255, 240, 0.95)");
+  backDiskGrad.addColorStop(0.12, "rgba(255, 240, 180, 0.9)");
+  backDiskGrad.addColorStop(0.25, "rgba(255, 200, 100, 0.7)");
+  backDiskGrad.addColorStop(0.45, "rgba(255, 140, 40, 0.45)");
+  backDiskGrad.addColorStop(0.65, "rgba(200, 70, 10, 0.2)");
+  backDiskGrad.addColorStop(0.85, "rgba(100, 25, 0, 0.08)");
+  backDiskGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
   ctx.beginPath();
-  ctx.ellipse(0, -radius * 0.1, radius * 1.45, radius * 1.5, 0, Math.PI, Math.PI * 2);
+  ctx.ellipse(0, 0, diskW, diskH, 0, Math.PI, Math.PI * 2);
+  ctx.fillStyle = backDiskGrad;
+  ctx.fill();
   ctx.restore();
 
-  const topGrad = ctx.createLinearGradient(0, -radius * 1.7, 0, 0);
-  topGrad.addColorStop(0, "rgba(255, 220, 150, 0.85)");
-  topGrad.addColorStop(0.3, "rgba(255, 150, 40, 0.7)");
-  topGrad.addColorStop(1, "rgba(200, 50, 0, 0)");
-  ctx.strokeStyle = topGrad;
-  ctx.lineWidth = radius * 0.3;
+  // ── 3. Gravitational lensing arc (Einstein ring - top) ──────────────
+  // The light from the back of the disk bends over the top of the black hole
+  ctx.save();
+  const lensR = R * 1.55;
+
+  // Outer lensing glow
+  ctx.beginPath();
+  ctx.ellipse(0, -R * 0.05, lensR * 1.15, lensR * 1.18, 0, Math.PI + 0.15, -0.15);
+  ctx.lineWidth = R * 0.38;
+  const lensOuterGrad = ctx.createLinearGradient(-lensR, -lensR, lensR, -lensR * 0.3);
+  lensOuterGrad.addColorStop(0, "rgba(180, 200, 240, 0.15)");
+  lensOuterGrad.addColorStop(0.2, "rgba(255, 220, 140, 0.35)");
+  lensOuterGrad.addColorStop(0.5, "rgba(255, 240, 200, 0.5)");
+  lensOuterGrad.addColorStop(0.8, "rgba(255, 200, 100, 0.3)");
+  lensOuterGrad.addColorStop(1, "rgba(255, 140, 40, 0.1)");
+  ctx.strokeStyle = lensOuterGrad;
   ctx.stroke();
 
-  const botGrad = ctx.createLinearGradient(0, radius * 1.7, 0, 0);
-  botGrad.addColorStop(0, "rgba(255, 150, 50, 0.5)");
-  botGrad.addColorStop(0.3, "rgba(200, 70, 10, 0.3)");
-  botGrad.addColorStop(1, "rgba(100, 20, 0, 0)");
-  ctx.strokeStyle = botGrad;
-  ctx.lineWidth = radius * 0.2;
+  // Bright inner lensing arc
+  ctx.beginPath();
+  ctx.ellipse(0, -R * 0.05, lensR, lensR * 1.02, 0, Math.PI + 0.2, -0.2);
+  ctx.lineWidth = R * 0.12;
+  const lensInnerGrad = ctx.createLinearGradient(-lensR, -lensR, lensR, -lensR);
+  lensInnerGrad.addColorStop(0, "rgba(200, 220, 255, 0.5)");
+  lensInnerGrad.addColorStop(0.3, "rgba(255, 245, 220, 0.85)");
+  lensInnerGrad.addColorStop(0.5, "rgba(255, 255, 245, 0.95)");
+  lensInnerGrad.addColorStop(0.7, "rgba(255, 230, 180, 0.8)");
+  lensInnerGrad.addColorStop(1, "rgba(255, 180, 80, 0.4)");
+  ctx.strokeStyle = lensInnerGrad;
+  ctx.shadowColor = "rgba(255, 240, 200, 0.4)";
+  ctx.shadowBlur = R * 0.3;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // ── 4. Gravitational lensing arc (bottom - dimmer, reddish) ─────────
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(0, R * 0.08, lensR * 0.95, lensR * 0.98, 0, 0.25, Math.PI - 0.25);
+  ctx.lineWidth = R * 0.22;
+  const lensBotGrad = ctx.createLinearGradient(-lensR, lensR, lensR, lensR * 0.5);
+  lensBotGrad.addColorStop(0, "rgba(180, 100, 50, 0.1)");
+  lensBotGrad.addColorStop(0.3, "rgba(255, 140, 50, 0.3)");
+  lensBotGrad.addColorStop(0.5, "rgba(255, 180, 100, 0.35)");
+  lensBotGrad.addColorStop(0.7, "rgba(255, 120, 30, 0.25)");
+  lensBotGrad.addColorStop(1, "rgba(200, 60, 10, 0.08)");
+  ctx.strokeStyle = lensBotGrad;
   ctx.stroke();
 
+  // Thin bright bottom arc
+  ctx.beginPath();
+  ctx.ellipse(0, R * 0.08, lensR * 0.9, lensR * 0.92, 0, 0.35, Math.PI - 0.35);
+  ctx.lineWidth = R * 0.05;
+  const lensBotInner = ctx.createLinearGradient(-lensR, 0, lensR, 0);
+  lensBotInner.addColorStop(0, "rgba(255, 160, 80, 0.2)");
+  lensBotInner.addColorStop(0.5, "rgba(255, 200, 140, 0.5)");
+  lensBotInner.addColorStop(1, "rgba(255, 120, 40, 0.15)");
+  ctx.strokeStyle = lensBotInner;
+  ctx.shadowColor = "rgba(255, 150, 60, 0.3)";
+  ctx.shadowBlur = R * 0.15;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // ── 5. Event horizon (the black sphere) ─────────────────────────────
   ctx.beginPath();
   ctx.fillStyle = "#000000";
-  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.arc(0, 0, R, 0, Math.PI * 2);
   ctx.fill();
-  
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = "rgba(255, 240, 200, 0.3)";
-  ctx.stroke();
 
+  // ── 6. Photon ring (ultra-thin bright ring at the event horizon) ────
   ctx.save();
-  ctx.globalAlpha = 0.9 + Math.sin(t * 0.003) * 0.1;
   ctx.beginPath();
-  ctx.ellipse(0, 0, radius * 3.8, radius * 0.45, 0, 0, Math.PI);
-  ctx.fillStyle = diskGrad;
-  ctx.shadowColor = "rgba(255, 200, 100, 0.5)";
-  ctx.shadowBlur = 20;
-  ctx.fill();
+  ctx.arc(0, 0, R * 1.02, 0, Math.PI * 2);
+  ctx.lineWidth = 1.2;
+  const photonGrad = ctx.createLinearGradient(-R, -R, R, R);
+  photonGrad.addColorStop(0, "rgba(200, 220, 255, 0.6)");
+  photonGrad.addColorStop(0.3, "rgba(255, 250, 230, 0.8)");
+  photonGrad.addColorStop(0.7, "rgba(255, 220, 160, 0.7)");
+  photonGrad.addColorStop(1, "rgba(255, 160, 60, 0.4)");
+  ctx.strokeStyle = photonGrad;
+  ctx.shadowColor = "rgba(255, 240, 200, 0.6)";
+  ctx.shadowBlur = 6;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
   ctx.restore();
 
+  // ── 7. Front accretion disk (in front of the black hole) ────────────
+  ctx.save();
+  const frontAlpha = 0.92 + Math.sin(t * 0.003) * 0.06;
+  ctx.globalAlpha = frontAlpha;
+
+  // Wide outer layers (Doppler: blue-ish left, orange-red right)
+  for (let layer = 2; layer >= 0; layer--) {
+    const lw = diskW + layer * R * 0.5;
+    const lh = diskH + layer * R * 0.04;
+    const la = 0.15 - layer * 0.04;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, lw, lh, 0, 0, Math.PI);
+    const fOuterGrad = ctx.createLinearGradient(-lw, 0, lw, 0);
+    fOuterGrad.addColorStop(0, `rgba(150, 170, 220, ${la * 0.6})`);
+    fOuterGrad.addColorStop(0.25, `rgba(200, 130, 60, ${la})`);
+    fOuterGrad.addColorStop(0.5, `rgba(240, 160, 60, ${la * 1.1})`);
+    fOuterGrad.addColorStop(0.75, `rgba(255, 120, 20, ${la * 0.9})`);
+    fOuterGrad.addColorStop(1, `rgba(180, 50, 5, ${la * 0.4})`);
+    ctx.fillStyle = fOuterGrad;
+    ctx.fill();
+  }
+
+  // Main bright front disk
+  const frontDiskGrad = ctx.createRadialGradient(0, 0, R * 1.05, 0, 0, diskW);
+  frontDiskGrad.addColorStop(0, "rgba(255, 255, 245, 0.98)");
+  frontDiskGrad.addColorStop(0.1, "rgba(255, 245, 200, 0.92)");
+  frontDiskGrad.addColorStop(0.22, "rgba(255, 210, 120, 0.7)");
+  frontDiskGrad.addColorStop(0.4, "rgba(255, 155, 45, 0.45)");
+  frontDiskGrad.addColorStop(0.6, "rgba(220, 80, 10, 0.2)");
+  frontDiskGrad.addColorStop(0.8, "rgba(120, 30, 0, 0.06)");
+  frontDiskGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
   ctx.beginPath();
-  ctx.ellipse(0, 0, radius * 3.4, radius * 0.08, 0, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-  ctx.shadowColor = "rgba(255, 255, 255, 1)";
-  ctx.shadowBlur = 15;
+  ctx.ellipse(0, 0, diskW, diskH, 0, 0, Math.PI);
+  ctx.fillStyle = frontDiskGrad;
+  ctx.shadowColor = "rgba(255, 200, 100, 0.5)";
+  ctx.shadowBlur = R * 0.4;
   ctx.fill();
   ctx.shadowBlur = 0;
+
+  ctx.restore();
+
+  // ── 8. Innermost bright ring (ISCO glow) ────────────────────────────
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(0, 0, R * 1.35, R * 0.12, 0, 0, Math.PI * 2);
+  ctx.lineWidth = R * 0.06;
+  const iscoGrad = ctx.createLinearGradient(-R * 1.5, 0, R * 1.5, 0);
+  iscoGrad.addColorStop(0, "rgba(200, 220, 255, 0.5)");
+  iscoGrad.addColorStop(0.25, "rgba(255, 250, 235, 0.85)");
+  iscoGrad.addColorStop(0.5, "rgba(255, 255, 250, 0.95)");
+  iscoGrad.addColorStop(0.75, "rgba(255, 230, 170, 0.8)");
+  iscoGrad.addColorStop(1, "rgba(255, 170, 60, 0.4)");
+  ctx.strokeStyle = iscoGrad;
+  ctx.shadowColor = "rgba(255, 255, 240, 0.8)";
+  ctx.shadowBlur = R * 0.2;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // ── 9. Subtle hot-spot shimmer on disk ──────────────────────────────
+  ctx.save();
+  const shimmerAngle = t * 0.0008;
+  const shimX = Math.cos(shimmerAngle) * diskW * 0.6;
+  const shimY = Math.sin(shimmerAngle) * diskH * 0.3;
+  const shimmer = ctx.createRadialGradient(shimX, shimY, 0, shimX, shimY, R * 0.8);
+  shimmer.addColorStop(0, "rgba(255, 255, 230, 0.12)");
+  shimmer.addColorStop(0.5, "rgba(255, 200, 100, 0.04)");
+  shimmer.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = shimmer;
+  ctx.beginPath();
+  ctx.arc(shimX, shimY, R * 0.8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 
   ctx.restore();
 }
