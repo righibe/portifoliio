@@ -144,7 +144,7 @@ function buildNetwork() {
       vy: (Math.random() - 0.5) * 0.13,
       size: 0.7 + Math.random() * 1.6,
       alpha: 0.12 + Math.random() * 0.35,
-      red: Math.random() < 0.08
+      red: false
     });
   }
 
@@ -465,7 +465,7 @@ function drawNetwork() {
 
   sparks.forEach(spark => {
     ctx.beginPath();
-    const redSpark = spark.red ? "143, 29, 44" : "230, 236, 246";
+    const redSpark = "230, 236, 246";
     const px = camera.scale > 1 ? spark.x + (width/2 - spark.x) * (1 - 1/camera.scale) * 0.6 : spark.x;
     const py = camera.scale > 1 ? spark.y + (height/2 - spark.y) * (1 - 1/camera.scale) * 0.6 : spark.y;
     
