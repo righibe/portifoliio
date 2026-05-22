@@ -35,7 +35,6 @@ let filaments = [];
 let sparks = [];
 let debris = [];
 
-
 let astronauts = [];
 let exploreMode = false;
 let score = 0;
@@ -43,6 +42,78 @@ let ship = { x: 0, y: 0, tx: 0, ty: 0, vx: 0, vy: 0, angle: 0, lastShot: 0 };
 let bullets = [];
 let keysDown = new Set();
 const bootTime = performance.now();
+
+// ─── Adaptive Quality System ──────────────────────────────────────────────
+// Quality tiers: 3 = high, 2 = medium, 1 = low
+let quality = {
+  tier: 3,
+  sparkCount: 70,
+  astronautCount: 3,
+  bhLayers: 3,        // number of outer disk layers in black hole
+  bhShadows: true,    // whether to use shadowBlur in black hole
+  bhShimmer: true,    // whether to draw the hot-spot shimmer
+  nodeGlow: true,     // whether to use shadowBlur on nodes
+  scaleFactor: 1      // multiplier for element sizes on large screens
+};
+
+// FPS monitoring for auto-downgrade
+let fpsHistory = [];
+let lastFpsCheck = 0;
+const FPS_CHECK_INTERVAL = 3000; // check every 3 seconds
+const FPS_LOW_THRESHOLD = 30;    // below this, downgrade
+
+function detectQuality() {
+  const totalPixels = window.innerWidth * window.innerHeight * (window.devicePixelRatio || 1);
+  const isHighRes = totalPixels > 4000000; // roughly > 2K
+  const is4K = totalPixels > 7000000;      // roughly 4K+
+
+  if (is4K) {
+    quality.tier = 1;
+  } else if (isHighRes) {
+    quality.tier = 2;
+  } else {
+    quality.tier = 3;
+  }
+  applyQualityTier();
+}
+
+function applyQualityTier() {
+  if (quality.tier === 1) {
+    quality.sparkCount = 35;
+    quality.astronautCount = 2;
+    quality.bhLayers = 1;
+    quality.bhShadows = false;
+    quality.bhShimmer = false;
+    quality.nodeGlow = false;
+  } else if (quality.tier === 2) {
+    quality.sparkCount = 50;
+    quality.astronautCount = 2;
+    quality.bhLayers = 2;
+    quality.bhShadows = true;
+    quality.bhShimmer = false;
+    quality.nodeGlow = true;
+  } else {
+    quality.sparkCount = 70;
+    quality.astronautCount = 3;
+    quality.bhLayers = 3;
+    quality.bhShadows = true;
+    quality.bhShimmer = true;
+    quality.nodeGlow = true;
+  }
+}
+
+function checkFpsAndDowngrade() {
+  if (time - lastFpsCheck < FPS_CHECK_INTERVAL) return;
+  lastFpsCheck = time;
+  if (fpsHistory.length < 10) return;
+  const avgFps = fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length;
+  fpsHistory = [];
+  if (avgFps < FPS_LOW_THRESHOLD && quality.tier > 1) {
+    quality.tier--;
+    applyQualityTier();
+    buildNetwork(); // rebuild with fewer particles
+  }
+}
 
 const clusterLayout = {
   skills:     { x: 0.55, y: 0.22, r: 110 },
@@ -61,7 +132,9 @@ function getBezierPoint(t, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
 }
 
 function resize() {
-  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const rawDpr = window.devicePixelRatio || 1;
+  // Cap DPR: 1.5 for 4K, 2 for others — saves huge pixel budgets
+  dpr = Math.min(rawDpr, rawDpr > 2 ? 1 : 1.5);
   width = window.innerWidth;
   height = window.innerHeight;
   canvas.width = Math.floor(width * dpr);
@@ -69,6 +142,12 @@ function resize() {
   canvas.style.width = width + "px";
   canvas.style.height = height + "px";
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // Compute a scale factor so elements look the same physical size on all screens
+  // Baseline: 1920px width = scaleFactor 1.0
+  quality.scaleFactor = Math.max(0.7, Math.min(2, width / 1920));
+
+  detectQuality();
   buildNetwork();
   ship.x = ship.tx = width * 0.5;
   ship.y = ship.ty = height * 0.58;
@@ -137,7 +216,7 @@ function buildNetwork() {
     }
   });
 
-  for (let i = 0; i < 70; i++) {
+  for (let i = 0; i < quality.sparkCount; i++) {
     sparks.push({
       x: Math.random() * width,
       y: Math.random() * height,
@@ -150,7 +229,7 @@ function buildNetwork() {
   }
 
   astronauts = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < quality.astronautCount; i++) {
     astronauts.push({
       x: Math.random() * width,
       y: Math.random() * height,
@@ -512,8 +591,10 @@ function drawNetwork() {
 
     ctx.beginPath();
     ctx.fillStyle = node.color;
-    ctx.shadowColor = node.color;
-    ctx.shadowBlur = node.core ? 28 * glow : 15 * glow;
+    if (quality.nodeGlow) {
+      ctx.shadowColor = node.color;
+      ctx.shadowBlur = node.core ? 28 * glow : 15 * glow;
+    }
     ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
@@ -760,7 +841,14 @@ function drawExplore() {
 }
 
 function loop(now) {
-  const delta = Math.min(2, (now - time) / 16.67 || 1);
+  const rawDelta = now - time;
+  const delta = Math.min(2, rawDelta / 16.67 || 1);
+
+  // Track FPS for auto-downgrade
+  if (rawDelta > 0) fpsHistory.push(1000 / rawDelta);
+  if (fpsHistory.length > 60) fpsHistory.shift();
+  checkFpsAndDowngrade();
+
   time = now;
   updateNetwork(delta);
   updateExplore(delta);
@@ -912,15 +1000,18 @@ if (exploreExitBtn) {
   });
 }
 
-// ─── Interstellar Gargantua ───────────────────────────────────────────────
+// ─── Interstellar Gargantua (quality-adaptive) ───────────────────────────
 function drawBlackHole(cx, cy, t) {
   ctx.save();
   ctx.translate(cx, cy);
 
-  const R = (width < 768 ? 50 : 80);
+  // Scale the black hole proportionally to screen size so it looks the same on 4K
+  const sf = quality.scaleFactor;
+  const R = (width < 768 ? 50 : 80) * sf;
   const pulse = 1 + Math.sin(t * 0.0018) * 0.012;
+  const useShadow = quality.bhShadows;
 
-  // ── 1. Deep ambient glow (warm haze surrounding everything) ─────────
+  // ── 1. Deep ambient glow ────────────────────────────────────────────
   const ambientR = R * 5.5;
   const ambient = ctx.createRadialGradient(0, 0, R * 0.5, 0, 0, ambientR);
   ambient.addColorStop(0, "rgba(255, 170, 60, 0.08)");
@@ -933,13 +1024,12 @@ function drawBlackHole(cx, cy, t) {
   ctx.fill();
 
   // ── 2. Outer accretion disk (behind the black hole) ─────────────────
-  // Back half of the disk - the part we see above the black hole
   ctx.save();
   const diskW = R * 4.2 * pulse;
   const diskH = R * 0.48;
 
-  // Outer cool layer (reddish-brown, very wide)
-  for (let layer = 0; layer < 3; layer++) {
+  // Outer cool layers (quality-adaptive count)
+  for (let layer = 0; layer < quality.bhLayers; layer++) {
     const layerAlpha = 0.12 - layer * 0.03;
     const layerW = diskW + layer * R * 0.6;
     const layerH = diskH + layer * R * 0.05;
@@ -971,7 +1061,6 @@ function drawBlackHole(cx, cy, t) {
   ctx.restore();
 
   // ── 3. Gravitational lensing arc (Einstein ring - top) ──────────────
-  // The light from the back of the disk bends over the top of the black hole
   ctx.save();
   const lensR = R * 1.55;
 
@@ -999,8 +1088,10 @@ function drawBlackHole(cx, cy, t) {
   lensInnerGrad.addColorStop(0.7, "rgba(255, 230, 180, 0.8)");
   lensInnerGrad.addColorStop(1, "rgba(255, 180, 80, 0.4)");
   ctx.strokeStyle = lensInnerGrad;
-  ctx.shadowColor = "rgba(255, 240, 200, 0.4)";
-  ctx.shadowBlur = R * 0.3;
+  if (useShadow) {
+    ctx.shadowColor = "rgba(255, 240, 200, 0.4)";
+    ctx.shadowBlur = R * 0.3;
+  }
   ctx.stroke();
   ctx.shadowBlur = 0;
   ctx.restore();
@@ -1028,8 +1119,10 @@ function drawBlackHole(cx, cy, t) {
   lensBotInner.addColorStop(0.5, "rgba(255, 200, 140, 0.5)");
   lensBotInner.addColorStop(1, "rgba(255, 120, 40, 0.15)");
   ctx.strokeStyle = lensBotInner;
-  ctx.shadowColor = "rgba(255, 150, 60, 0.3)";
-  ctx.shadowBlur = R * 0.15;
+  if (useShadow) {
+    ctx.shadowColor = "rgba(255, 150, 60, 0.3)";
+    ctx.shadowBlur = R * 0.15;
+  }
   ctx.stroke();
   ctx.shadowBlur = 0;
   ctx.restore();
@@ -1040,7 +1133,7 @@ function drawBlackHole(cx, cy, t) {
   ctx.arc(0, 0, R, 0, Math.PI * 2);
   ctx.fill();
 
-  // ── 6. Photon ring (ultra-thin bright ring at the event horizon) ────
+  // ── 6. Photon ring ──────────────────────────────────────────────────
   ctx.save();
   ctx.beginPath();
   ctx.arc(0, 0, R * 1.02, 0, Math.PI * 2);
@@ -1051,19 +1144,21 @@ function drawBlackHole(cx, cy, t) {
   photonGrad.addColorStop(0.7, "rgba(255, 220, 160, 0.7)");
   photonGrad.addColorStop(1, "rgba(255, 160, 60, 0.4)");
   ctx.strokeStyle = photonGrad;
-  ctx.shadowColor = "rgba(255, 240, 200, 0.6)";
-  ctx.shadowBlur = 6;
+  if (useShadow) {
+    ctx.shadowColor = "rgba(255, 240, 200, 0.6)";
+    ctx.shadowBlur = 6;
+  }
   ctx.stroke();
   ctx.shadowBlur = 0;
   ctx.restore();
 
-  // ── 7. Front accretion disk (in front of the black hole) ────────────
+  // ── 7. Front accretion disk ─────────────────────────────────────────
   ctx.save();
   const frontAlpha = 0.92 + Math.sin(t * 0.003) * 0.06;
   ctx.globalAlpha = frontAlpha;
 
-  // Wide outer layers (Doppler: blue-ish left, orange-red right)
-  for (let layer = 2; layer >= 0; layer--) {
+  // Outer layers (quality-adaptive count)
+  for (let layer = quality.bhLayers - 1; layer >= 0; layer--) {
     const lw = diskW + layer * R * 0.5;
     const lh = diskH + layer * R * 0.04;
     const la = 0.15 - layer * 0.04;
@@ -1091,14 +1186,15 @@ function drawBlackHole(cx, cy, t) {
   ctx.beginPath();
   ctx.ellipse(0, 0, diskW, diskH, 0, 0, Math.PI);
   ctx.fillStyle = frontDiskGrad;
-  ctx.shadowColor = "rgba(255, 200, 100, 0.5)";
-  ctx.shadowBlur = R * 0.4;
+  if (useShadow) {
+    ctx.shadowColor = "rgba(255, 200, 100, 0.5)";
+    ctx.shadowBlur = R * 0.4;
+  }
   ctx.fill();
   ctx.shadowBlur = 0;
-
   ctx.restore();
 
-  // ── 8. Innermost bright ring (ISCO glow) ────────────────────────────
+  // ── 8. ISCO glow ring ───────────────────────────────────────────────
   ctx.save();
   ctx.beginPath();
   ctx.ellipse(0, 0, R * 1.35, R * 0.12, 0, 0, Math.PI * 2);
@@ -1110,26 +1206,30 @@ function drawBlackHole(cx, cy, t) {
   iscoGrad.addColorStop(0.75, "rgba(255, 230, 170, 0.8)");
   iscoGrad.addColorStop(1, "rgba(255, 170, 60, 0.4)");
   ctx.strokeStyle = iscoGrad;
-  ctx.shadowColor = "rgba(255, 255, 240, 0.8)";
-  ctx.shadowBlur = R * 0.2;
+  if (useShadow) {
+    ctx.shadowColor = "rgba(255, 255, 240, 0.8)";
+    ctx.shadowBlur = R * 0.2;
+  }
   ctx.stroke();
   ctx.shadowBlur = 0;
   ctx.restore();
 
-  // ── 9. Subtle hot-spot shimmer on disk ──────────────────────────────
-  ctx.save();
-  const shimmerAngle = t * 0.0008;
-  const shimX = Math.cos(shimmerAngle) * diskW * 0.6;
-  const shimY = Math.sin(shimmerAngle) * diskH * 0.3;
-  const shimmer = ctx.createRadialGradient(shimX, shimY, 0, shimX, shimY, R * 0.8);
-  shimmer.addColorStop(0, "rgba(255, 255, 230, 0.12)");
-  shimmer.addColorStop(0.5, "rgba(255, 200, 100, 0.04)");
-  shimmer.addColorStop(1, "rgba(0, 0, 0, 0)");
-  ctx.fillStyle = shimmer;
-  ctx.beginPath();
-  ctx.arc(shimX, shimY, R * 0.8, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
+  // ── 9. Hot-spot shimmer (skipped on low quality) ────────────────────
+  if (quality.bhShimmer) {
+    ctx.save();
+    const shimmerAngle = t * 0.0008;
+    const shimX = Math.cos(shimmerAngle) * diskW * 0.6;
+    const shimY = Math.sin(shimmerAngle) * diskH * 0.3;
+    const shimmer = ctx.createRadialGradient(shimX, shimY, 0, shimX, shimY, R * 0.8);
+    shimmer.addColorStop(0, "rgba(255, 255, 230, 0.12)");
+    shimmer.addColorStop(0.5, "rgba(255, 200, 100, 0.04)");
+    shimmer.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = shimmer;
+    ctx.beginPath();
+    ctx.arc(shimX, shimY, R * 0.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 
   ctx.restore();
 }
