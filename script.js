@@ -34,7 +34,7 @@ let filaments = [];
 let sparks = [];
 let debris = [];
 
-let debris = [];
+
 let astronauts = [];
 let exploreMode = false;
 let score = 0;
