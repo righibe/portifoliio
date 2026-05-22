@@ -32,7 +32,9 @@ let camera = { x: 0, y: 0, tx: 0, ty: 0, scale: 1, targetScale: 1, cx: 0, cy: 0 
 let nodes = [];
 let filaments = [];
 let sparks = [];
-let asteroids = [];
+let debris = [];
+
+let debris = [];
 let astronauts = [];
 let exploreMode = false;
 let score = 0;
@@ -305,7 +307,9 @@ function renderPanel(key) {
       const partners = isPartnerships && data.links
         ? `<div class="partner-cards">${data.links.map(([label, href, subtitle]) =>
             `<a class="partner-card-item" href="${href}" target="_blank" rel="noopener">
-              <div class="partner-card-info"><strong>${label}</strong><span>${t(subtitle)}</span></div>
+              <div class="partner-card-info"><strong>${label}</strong><span class="lang-badge" data-i18n="lang_pt"><small data-i18n="lang_pt_level"></small></span>
+        <span class="lang-badge" data-i18n="lang_en"><small data-i18n="lang_en_level"></small></span>
+        <span class="lang-badge" data-i18n="lang_es"><small data-i18n="lang_es_level"></small></span>${t(subtitle)}</span></div>
               <div class="partner-card-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
             </a>`
           ).join("")}</div>`
@@ -361,6 +365,7 @@ function activateExploreMode() {
   score = 0;
   asteroids = [];
   bullets = [];
+  debris = [];
   ship.angle = 0;
   ship.lastShot = 0;
   document.body.classList.add("content-open");
@@ -496,15 +501,6 @@ function drawNetwork() {
     
     ctx.bezierCurveTo(midX1, midY1, midX2, midY2, line.b.x, line.b.y);
     ctx.stroke();
-
-    if (active || nearMouse) {
-      const flowAlpha = (time * 0.0006 + line.pulse) % 1;
-      const pt = getBezierPoint(flowAlpha, line.a.x, line.a.y, midX1, midY1, midX2, midY2, line.b.x, line.b.y);
-      ctx.beginPath();
-      ctx.fillStyle = `rgba(143, 180, 255, ${alpha * 1.8})`;
-      ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
   });
 
   nodes.forEach(node => {
@@ -529,15 +525,8 @@ function drawNetwork() {
 
     if (node.core && (!node.secret || hover)) {
       ctx.beginPath();
-      ctx.strokeStyle = hexToRgba(node.color, active || hover ? 0.7 : 0.3);
-      ctx.setLineDash([4, 6]);
-      ctx.arc(node.x, node.y, radius + 22 + Math.cos(time * 0.002 + node.baseY) * 5, time * 0.001, time * 0.001 + Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      
-      ctx.beginPath();
-      ctx.strokeStyle = hexToRgba(node.color, 0.15);
-      ctx.arc(node.x, node.y, radius + 34 + Math.sin(time * 0.0015 + node.baseX) * 6, 0, Math.PI * 2);
+      ctx.strokeStyle = hexToRgba(node.color, active || hover ? 0.3 : 0.15);
+      ctx.arc(node.x, node.y, radius + 22 + Math.cos(time * 0.002 + node.baseY) * 5, 0, Math.PI * 2);
       ctx.stroke();
 
       ctx.font = "500 12px JetBrains Mono, monospace";
@@ -620,6 +609,14 @@ function updateExplore(delta) {
     });
   }
 
+  // Update debris positions and fade out
+  debris.forEach(d => {
+    d.x += d.vx * delta;
+    d.y += d.vy * delta;
+    d.alpha -= d.fade * delta;
+  });
+  debris = debris.filter(d => d.alpha > 0);
+
   asteroids.forEach(enemy => {
     enemy.x += enemy.vx * delta;
     enemy.y += enemy.vy * delta;
@@ -633,14 +630,14 @@ function updateExplore(delta) {
           score += 20;
           exploreScore.textContent = String(score);
           for (let i = 0; i < 8; i++) {
-            sparks.push({
+            debris.push({
               x: enemy.x,
               y: enemy.y,
               vx: (Math.random() - 0.5) * 2,
               vy: (Math.random() - 0.5) * 2,
               size: 1 + Math.random() * 2,
-              alpha: 0.6,
-              red: true
+              alpha: 0.8,
+              fade: 0.01 + Math.random() * 0.02
             });
           }
         }
@@ -653,14 +650,14 @@ function updateExplore(delta) {
       score -= 50;
       exploreScore.textContent = String(score);
       for (let i = 0; i < 6; i++) {
-        sparks.push({
+        debris.push({
           x: enemy.x,
           y: enemy.y,
           vx: (Math.random() - 0.5) * 1.4,
           vy: (Math.random() - 0.5) * 1.4,
           size: 1 + Math.random() * 2,
-          alpha: 0.42,
-          red: true
+          alpha: 0.6,
+          fade: 0.01 + Math.random() * 0.02
         });
       }
     }
@@ -688,6 +685,14 @@ function drawExplore() {
     ctx.arc(b.x, b.y, 2.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
+  });
+
+  // Draw debris
+  debris.forEach(d => {
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(255, 255, 255, ${d.alpha})`;
+    ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
+    ctx.fill();
   });
 
   asteroids.forEach(enemy => {
@@ -900,67 +905,115 @@ if (exploreExitBtn) {
 function drawBlackHole(cx, cy, t) {
   ctx.save();
   ctx.translate(cx, cy);
+  ctx.rotate(-12 * Math.PI / 180);
 
-  const radius = width < 768 ? 50 : 80;
-  const diskRadius = radius * 3.2;
+  const radius = width < 768 ? 55 : 90;
   
-  const haloGradient = ctx.createRadialGradient(0, 0, radius * 0.95, 0, 0, radius * 2.8);
-  haloGradient.addColorStop(0, "rgba(255, 200, 120, 0)");
-  haloGradient.addColorStop(0.35, "rgba(255, 210, 140, 0.4)"); 
-  haloGradient.addColorStop(0.5, "rgba(180, 70, 20, 0.15)");
-  haloGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-
+  const glow = ctx.createRadialGradient(0, 0, radius, 0, 0, radius * 4.5);
+  glow.addColorStop(0, "rgba(255, 180, 80, 0.15)");
+  glow.addColorStop(0.4, "rgba(150, 50, 10, 0.05)");
+  glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.fillStyle = haloGradient;
-  ctx.arc(0, 0, radius * 2.8, 0, Math.PI * 2);
+  ctx.arc(0, 0, radius * 4.5, 0, Math.PI * 2);
   ctx.fill();
 
-  const diskGrad = ctx.createRadialGradient(0, 0, radius, 0, 0, diskRadius);
-  diskGrad.addColorStop(0, "rgba(255, 255, 255, 0.0)");
-  diskGrad.addColorStop(radius / diskRadius, "rgba(255, 240, 180, 0.8)");
-  diskGrad.addColorStop(radius / diskRadius + 0.08, "rgba(255, 150, 40, 0.6)");
-  diskGrad.addColorStop(1, "rgba(30, 5, 0, 0)");
+  const diskGrad = ctx.createRadialGradient(0, 0, radius * 0.9, 0, 0, radius * 3.8);
+  diskGrad.addColorStop(0, "rgba(255, 255, 255, 1)");
+  diskGrad.addColorStop(0.15, "rgba(255, 220, 120, 1)");
+  diskGrad.addColorStop(0.35, "rgba(255, 120, 30, 0.8)");
+  diskGrad.addColorStop(0.7, "rgba(80, 10, 0, 0.3)");
+  diskGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
   
-  ctx.save();
-  ctx.scale(1, 0.22);
-  ctx.rotate(t * 0.0003);
   ctx.beginPath();
+  ctx.ellipse(0, 0, radius * 3.8, radius * 0.45, 0, Math.PI, Math.PI * 2);
   ctx.fillStyle = diskGrad;
-  ctx.arc(0, 0, diskRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(0, -radius * 0.1, radius * 1.45, radius * 1.5, 0, Math.PI, Math.PI * 2);
+  ctx.lineWidth = radius * 0.3;
+  const topGrad = ctx.createLinearGradient(0, -radius * 1.7, 0, 0);
+  topGrad.addColorStop(0, "rgba(255, 220, 150, 0.85)");
+  topGrad.addColorStop(0.3, "rgba(255, 150, 40, 0.7)");
+  topGrad.addColorStop(1, "rgba(200, 50, 0, 0)");
+  ctx.strokeStyle = topGrad;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.ellipse(0, radius * 0.1, radius * 1.45, radius * 1.5, 0, 0, Math.PI);
+  ctx.lineWidth = radius * 0.2;
+  const botGrad = ctx.createLinearGradient(0, radius * 1.7, 0, 0);
+  botGrad.addColorStop(0, "rgba(255, 150, 50, 0.5)");
+  botGrad.addColorStop(0.3, "rgba(200, 70, 10, 0.3)");
+  botGrad.addColorStop(1, "rgba(100, 20, 0, 0)");
+  ctx.strokeStyle = botGrad;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.fillStyle = "#000000";
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
   ctx.fill();
   
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = "rgba(255, 200, 100, 0.1)";
-  for (let i = 0; i < 4; i++) {
-    ctx.beginPath();
-    ctx.arc(0, 0, radius + 20 + i * 30, t * 0.001 + i, t * 0.001 + i + Math.PI * 1.2);
-    ctx.stroke();
-  }
-  ctx.restore();
+  ctx.strokeStyle = "rgba(255, 240, 200, 0.3)";
+  ctx.stroke();
 
   ctx.beginPath();
-  ctx.fillStyle = "#000103";
-  ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-  ctx.shadowBlur = 15;
-  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, radius * 3.8, radius * 0.45, 0, 0, Math.PI);
+  ctx.fillStyle = diskGrad;
+  ctx.shadowColor = "rgba(255, 200, 100, 0.5)";
+  ctx.shadowBlur = 20;
   ctx.fill();
   ctx.shadowBlur = 0;
 
-  ctx.save();
   ctx.beginPath();
-  ctx.rect(-diskRadius, 0, diskRadius * 2, radius * 2.5);
-  ctx.clip();
-  
-  ctx.scale(1, 0.22);
-  ctx.rotate(t * 0.0003);
-  ctx.beginPath();
-  ctx.fillStyle = diskGrad;
-  ctx.arc(0, 0, diskRadius, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, radius * 3.4, radius * 0.08, 0, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+  ctx.shadowColor = "rgba(255, 255, 255, 1)";
+  ctx.shadowBlur = 15;
   ctx.fill();
-  ctx.restore();
+  ctx.shadowBlur = 0;
 
   ctx.restore();
 }
+
+const translations = {
+  en: {
+    lang_pt: "Portuguese",
+    lang_pt_level: "Native",
+    lang_en: "English",
+    lang_en_level: "Fluent",
+    lang_es: "Spanish",
+    lang_es_level: "Intermediate"
+  },
+  pt: {
+    lang_pt: "Português",
+    lang_pt_level: "Nativo",
+    lang_en: "Inglês",
+    lang_en_level: "Fluente",
+    lang_es: "Espanhol",
+    lang_es_level: "Intermediário"
+  }
+};
+
+function changeLanguage(lang) {
+  const dict = translations[lang] || translations.en;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key]) {
+      el.textContent = dict[key];
+    }
+  });
+}
+
+const langButtons = document.querySelectorAll('.lang-switch');
+langButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const lang = btn.dataset.lang;
+    changeLanguage(lang);
+  });
+});
 
 function drawAstronauts() {
   astronauts.forEach(astro => {
