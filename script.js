@@ -458,7 +458,7 @@ function drawNetwork() {
   }
 
   // Draw the Black Hole in the center background
-  drawBlackHole(width * 0.65, height * 0.5, time);
+  drawBlackHole(width * 0.85, height * 0.15, time);
   
   // Draw floating astronauts
   drawAstronauts();
@@ -907,7 +907,7 @@ function drawBlackHole(cx, cy, t) {
   ctx.translate(cx, cy);
   ctx.rotate(-12 * Math.PI / 180);
 
-  const radius = width < 768 ? 55 : 90;
+  const radius = (width < 768 ? 55 : 90) * 0.6;
   
   const glow = ctx.createRadialGradient(0, 0, radius, 0, 0, radius * 4.5);
   glow.addColorStop(0, "rgba(255, 180, 80, 0.15)");
