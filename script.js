@@ -33,6 +33,7 @@ let nodes = [];
 let filaments = [];
 let sparks = [];
 let asteroids = [];
+let astronauts = [];
 let exploreMode = false;
 let score = 0;
 let ship = { x: 0, y: 0, tx: 0, ty: 0, vx: 0, vy: 0, angle: 0, lastShot: 0 };
@@ -142,6 +143,19 @@ function buildNetwork() {
       size: 0.7 + Math.random() * 1.6,
       alpha: 0.12 + Math.random() * 0.35,
       red: Math.random() < 0.08
+    });
+  }
+
+  astronauts = [];
+  for (let i = 0; i < 3; i++) {
+    astronauts.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: (Math.random() - 0.5) * 0.15,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.015,
+      size: 0.5 + Math.random() * 0.4
     });
   }
 }
@@ -408,6 +422,16 @@ function updateNetwork(delta) {
     if (spark.y < -20) spark.y = height + 20;
     if (spark.y > height + 20) spark.y = -20;
   });
+
+  astronauts.forEach(astro => {
+    astro.x += astro.vx * delta;
+    astro.y += astro.vy * delta;
+    astro.angle += astro.spin * delta;
+    if (astro.x < -100) astro.x = width + 100;
+    if (astro.x > width + 100) astro.x = -100;
+    if (astro.y < -100) astro.y = height + 100;
+    if (astro.y > height + 100) astro.y = -100;
+  });
 }
 
 function drawNetwork() {
@@ -427,6 +451,12 @@ function drawNetwork() {
     ctx.scale(camera.scale, camera.scale);
     ctx.translate(-pivotX, -pivotY);
   }
+
+  // Draw the Black Hole in the center background
+  drawBlackHole(width * 0.65, height * 0.5, time);
+  
+  // Draw floating astronauts
+  drawAstronauts();
 
   sparks.forEach(spark => {
     ctx.beginPath();
@@ -863,5 +893,122 @@ if (exploreExitBtn) {
     exploreHud.setAttribute("aria-hidden", "true");
     exploreExitBtn.classList.remove("active");
     exploreExitBtn.setAttribute("aria-hidden", "true");
+  });
+}
+
+// ─── Interstellar Elements ────────────────────────────────────────────────
+function drawBlackHole(cx, cy, t) {
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  const radius = width < 768 ? 50 : 80;
+  const diskRadius = radius * 3.2;
+  
+  const haloGradient = ctx.createRadialGradient(0, 0, radius * 0.95, 0, 0, radius * 2.8);
+  haloGradient.addColorStop(0, "rgba(255, 200, 120, 0)");
+  haloGradient.addColorStop(0.35, "rgba(255, 210, 140, 0.4)"); 
+  haloGradient.addColorStop(0.5, "rgba(180, 70, 20, 0.15)");
+  haloGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+  ctx.beginPath();
+  ctx.fillStyle = haloGradient;
+  ctx.arc(0, 0, radius * 2.8, 0, Math.PI * 2);
+  ctx.fill();
+
+  const diskGrad = ctx.createRadialGradient(0, 0, radius, 0, 0, diskRadius);
+  diskGrad.addColorStop(0, "rgba(255, 255, 255, 0.0)");
+  diskGrad.addColorStop(radius / diskRadius, "rgba(255, 240, 180, 0.8)");
+  diskGrad.addColorStop(radius / diskRadius + 0.08, "rgba(255, 150, 40, 0.6)");
+  diskGrad.addColorStop(1, "rgba(30, 5, 0, 0)");
+  
+  ctx.save();
+  ctx.scale(1, 0.22);
+  ctx.rotate(t * 0.0003);
+  ctx.beginPath();
+  ctx.fillStyle = diskGrad;
+  ctx.arc(0, 0, diskRadius, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = "rgba(255, 200, 100, 0.1)";
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.arc(0, 0, radius + 20 + i * 30, t * 0.001 + i, t * 0.001 + i + Math.PI * 1.2);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.beginPath();
+  ctx.fillStyle = "#000103";
+  ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+  ctx.shadowBlur = 15;
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(-diskRadius, 0, diskRadius * 2, radius * 2.5);
+  ctx.clip();
+  
+  ctx.scale(1, 0.22);
+  ctx.rotate(t * 0.0003);
+  ctx.beginPath();
+  ctx.fillStyle = diskGrad;
+  ctx.arc(0, 0, diskRadius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function drawAstronauts() {
+  astronauts.forEach(astro => {
+    ctx.save();
+    ctx.translate(astro.x, astro.y);
+    ctx.scale(astro.size, astro.size);
+    ctx.rotate(astro.angle);
+    
+    ctx.strokeStyle = "rgba(240, 245, 255, 0.5)";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+    ctx.lineWidth = 1.5;
+    
+    ctx.beginPath();
+    ctx.arc(0, -10, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(255, 180, 60, 0.4)";
+    ctx.arc(2, -10, 3, -Math.PI/4, Math.PI/1.5);
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.rect(-7, -4, 14, 16);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.rect(-10, -2, 3, 12);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(-7, 0); ctx.lineTo(-12, 4); ctx.lineTo(-10, 10);
+    ctx.moveTo(7, 0); ctx.lineTo(12, 2); ctx.lineTo(14, -4);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(-4, 12); ctx.lineTo(-6, 20); ctx.lineTo(-4, 24);
+    ctx.moveTo(4, 12); ctx.lineTo(5, 22); ctx.lineTo(8, 23);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.setLineDash([4, 4]);
+    ctx.moveTo(0, 6);
+    ctx.quadraticCurveTo(-20, 25, -40, 10);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    ctx.restore();
   });
 }
