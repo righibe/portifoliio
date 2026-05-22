@@ -61,10 +61,10 @@
         <div class="istat"><strong>Top 6</strong><span data-i18n="statCommunity">Brazil dev community</span></div>
       </div>
 
-      <div class="identity__languages" style="display:flex; gap:16px; margin-top:20px; color:rgba(203, 213, 225, 0.92); font-family:var(--mono); font-size:0.85rem;">
-        <span>🇵🇹 Portuguese — Native</span>
-        <span>🇬🇧 English — Fluent</span>
-        <span>🇪🇸 Spanish — Intermediate</span>
+      <div class="identity__languages">
+        <span class="lang-badge">Portuguese <small>Native</small></span>
+        <span class="lang-badge">English <small>Fluent</small></span>
+        <span class="lang-badge">Spanish <small>Intermediate</small></span>
       </div>
 
       <div class="terminal" id="terminal">
@@ -113,8 +113,8 @@
     <div class="explore-hud" id="explore-hud" aria-hidden="true">
       <span>Exploration mode</span>
       <strong id="explore-score">0</strong>
-      <small>Move with WASD</small>
-      <button id="explore-exit" style="margin-top:10px; padding:6px 12px; background:rgba(143,29,44,0.8); color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:var(--mono); font-size:0.8rem;">Stop / Exit</button>
+      <small>Move: WASD | Shoot: Space</small>
+      <button id="explore-exit" class="explore-exit-btn">Stop / Exit</button>
     </div>
   </main>
 

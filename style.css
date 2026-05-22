@@ -235,7 +235,7 @@ button {
   position: absolute;
   left: clamp(22px, 5vw, 72px);
   top: 50%;
-  width: min(440px, calc(100vw - 44px));
+  width: min(560px, calc(100vw - 44px));
   transform: translateY(-50%);
   opacity: 0;
   animation: emerge 1600ms 380ms var(--ease) forwards;
@@ -283,6 +283,30 @@ button {
   color: var(--soft);
   font-size: clamp(0.9rem, 1vw, 1rem);
   line-height: 1.6;
+}
+
+.identity__languages {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.lang-badge {
+  display: inline-flex;
+  flex-direction: column;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(30, 58, 138, 0.1);
+  border-left: 2px solid rgba(143, 180, 255, 0.4);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: #f5f7fb;
+}
+
+.lang-badge small {
+  color: var(--muted);
+  font-size: 0.7rem;
+  margin-top: 4px;
 }
 
 /* ─── Landing page stats ─────────────────────────────────────────────────── */
@@ -998,6 +1022,36 @@ button {
 
 .explore-hud small {
   color: var(--muted);
+}
+
+.explore-exit-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 8px 16px;
+  background: rgba(143, 29, 44, 0.2);
+  color: #f5f7fb;
+  border: 1px solid rgba(143, 29, 44, 0.5);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  transition: all 0.2s var(--ease);
+  pointer-events: auto;
+  z-index: 50;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.explore-hud.active .explore-exit-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.explore-exit-btn:hover {
+  background: rgba(143, 29, 44, 0.6);
+  transform: translateY(-2px);
+  border-color: rgba(143, 29, 44, 0.8);
 }
 
 /* ─── Modal ──────────────────────────────────────────────────────────────── */

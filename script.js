@@ -34,7 +34,8 @@ let sparks = [];
 let asteroids = [];
 let exploreMode = false;
 let score = 0;
-let ship = { x: 0, y: 0, tx: 0, ty: 0, vx: 0, vy: 0 };
+let ship = { x: 0, y: 0, tx: 0, ty: 0, vx: 0, vy: 0, angle: 0, lastShot: 0 };
+let bullets = [];
 let keysDown = new Set();
 const bootTime = performance.now();
 
@@ -335,6 +336,9 @@ function activateExploreMode() {
   exploreMode = true;
   score = 0;
   asteroids = [];
+  bullets = [];
+  ship.angle = 0;
+  ship.lastShot = 0;
   document.body.classList.add("content-open");
   exploreHud.classList.add("active");
   exploreHud.setAttribute("aria-hidden", "false");
@@ -508,31 +512,77 @@ function updateExplore(delta) {
   ship.x = Math.max(24, Math.min(width - 24, ship.x + ship.vx * delta));
   ship.y = Math.max(92, Math.min(height - 28, ship.y + ship.vy * delta));
 
+  if (Math.abs(ship.vx) > 0.1 || Math.abs(ship.vy) > 0.1) {
+    ship.angle = Math.atan2(ship.vy, ship.vx) + Math.PI / 2;
+  }
+
+  if (keysDown.has(" ")) {
+    if (time - ship.lastShot > 180) {
+      const speed = 16;
+      bullets.push({
+        x: ship.x + Math.cos(ship.angle - Math.PI / 2) * 16,
+        y: ship.y + Math.sin(ship.angle - Math.PI / 2) * 16,
+        vx: Math.cos(ship.angle - Math.PI / 2) * speed,
+        vy: Math.sin(ship.angle - Math.PI / 2) * speed,
+        hit: false
+      });
+      ship.lastShot = time;
+    }
+  }
+
+  bullets.forEach(b => {
+    b.x += b.vx * delta;
+    b.y += b.vy * delta;
+  });
+  bullets = bullets.filter(b => b.x > -50 && b.x < width + 50 && b.y > -50 && b.y < height + 50 && !b.hit);
+
   if (Math.random() < 0.025 * delta) {
     asteroids.push({
       x: Math.random() * width,
       y: -40,
-      r: 8 + Math.random() * 19,
-      vx: (Math.random() - 0.5) * 0.45,
-      vy: 0.7 + Math.random() * 1.4,
-      spin: Math.random() * Math.PI,
+      r: 14,
+      vx: (Math.random() - 0.5) * 1.5,
+      vy: 1.0 + Math.random() * 1.5,
       hit: false
     });
   }
 
-  asteroids.forEach(asteroid => {
-    asteroid.x += asteroid.vx * delta;
-    asteroid.y += asteroid.vy * delta;
-    asteroid.spin += 0.02 * delta;
-    const dist = Math.hypot(asteroid.x - ship.x, asteroid.y - ship.y);
-    if (!asteroid.hit && dist < asteroid.r + 17) {
-      asteroid.hit = true;
-      score += 10;
+  asteroids.forEach(enemy => {
+    enemy.x += enemy.vx * delta;
+    enemy.y += enemy.vy * delta;
+
+    bullets.forEach(b => {
+      if (!b.hit && !enemy.hit) {
+        const dist = Math.hypot(b.x - enemy.x, b.y - enemy.y);
+        if (dist < enemy.r + 6) {
+          enemy.hit = true;
+          b.hit = true;
+          score += 20;
+          exploreScore.textContent = String(score);
+          for (let i = 0; i < 8; i++) {
+            sparks.push({
+              x: enemy.x,
+              y: enemy.y,
+              vx: (Math.random() - 0.5) * 2,
+              vy: (Math.random() - 0.5) * 2,
+              size: 1 + Math.random() * 2,
+              alpha: 0.6,
+              red: true
+            });
+          }
+        }
+      }
+    });
+
+    const dist = Math.hypot(enemy.x - ship.x, enemy.y - ship.y);
+    if (!enemy.hit && dist < enemy.r + 17) {
+      enemy.hit = true;
+      score -= 50;
       exploreScore.textContent = String(score);
       for (let i = 0; i < 6; i++) {
         sparks.push({
-          x: asteroid.x,
-          y: asteroid.y,
+          x: enemy.x,
+          y: enemy.y,
           vx: (Math.random() - 0.5) * 1.4,
           vy: (Math.random() - 0.5) * 1.4,
           size: 1 + Math.random() * 2,
@@ -542,7 +592,7 @@ function updateExplore(delta) {
       }
     }
   });
-  asteroids = asteroids.filter(asteroid => asteroid.y < height + 60 && !asteroid.hit);
+  asteroids = asteroids.filter(enemy => enemy.y < height + 60 && !enemy.hit);
 }
 
 function drawExplore() {
@@ -557,40 +607,65 @@ function drawExplore() {
     ctx.fill();
   });
 
-  asteroids.forEach(asteroid => {
-    ctx.save();
-    ctx.translate(asteroid.x, asteroid.y);
-    ctx.rotate(asteroid.spin);
+  bullets.forEach(b => {
     ctx.beginPath();
-    ctx.strokeStyle = "rgba(230, 236, 246, 0.62)";
-    ctx.fillStyle = "rgba(30, 58, 138, 0.12)";
-    ctx.lineWidth = 1.2;
-    for (let i = 0; i < 8; i++) {
-      const angle = (Math.PI * 2 * i) / 8;
-      const radius = asteroid.r * (0.72 + Math.sin(i * 1.7 + asteroid.spin) * 0.16);
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
+    ctx.fillStyle = "#8FAEFF";
+    ctx.shadowColor = "#8FAEFF";
+    ctx.shadowBlur = 10;
+    ctx.arc(b.x, b.y, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  });
+
+  asteroids.forEach(enemy => {
+    ctx.save();
+    ctx.translate(enemy.x, enemy.y);
+    let angle = Math.atan2(enemy.vy, enemy.vx) + Math.PI / 2;
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(143, 29, 44, 0.9)";
+    ctx.shadowColor = "rgba(143, 29, 44, 0.4)";
+    ctx.shadowBlur = 12;
+    ctx.moveTo(0, -12);
+    ctx.lineTo(-10, 10);
+    ctx.lineTo(0, 4);
+    ctx.lineTo(10, 10);
     ctx.closePath();
     ctx.fill();
-    ctx.stroke();
+    ctx.shadowBlur = 0;
+    
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(255, 180, 50, 0.9)";
+    ctx.arc(0, -13, 2.5, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   });
 
   ctx.save();
   ctx.translate(ship.x, ship.y);
+  ctx.rotate(ship.angle);
   ctx.beginPath();
   ctx.fillStyle = "rgba(245, 247, 251, 0.92)";
   ctx.shadowColor = "#8FAEFF";
-  ctx.shadowBlur = 24;
-  ctx.moveTo(0, -18);
-  ctx.lineTo(-12, 14);
-  ctx.lineTo(0, 7);
-  ctx.lineTo(12, 14);
+  ctx.shadowBlur = 20;
+  
+  ctx.moveTo(0, -20);
+  ctx.lineTo(-14, 14);
+  ctx.lineTo(-6, 8);
+  ctx.lineTo(0, 12);
+  ctx.lineTo(6, 8);
+  ctx.lineTo(14, 14);
   ctx.closePath();
   ctx.fill();
+  
+  ctx.beginPath();
+  ctx.fillStyle = "rgba(30, 58, 138, 0.8)";
+  ctx.moveTo(0, -10);
+  ctx.lineTo(-4, 0);
+  ctx.lineTo(4, 0);
+  ctx.closePath();
+  ctx.fill();
+
   ctx.shadowBlur = 0;
   ctx.restore();
 }
