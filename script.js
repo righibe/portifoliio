@@ -932,8 +932,8 @@ langItems.forEach(item => {
 
     const identityCopy = document.querySelector(".identity__copy");
     if (identityCopy) identityCopy.textContent = currentLang === "pt"
-      ? "Desenvolvedor back-end trabalhando com Python, Java, automação e sistemas inteligentes."
-      : "Back-end developer working with Python, Java, automation and intelligent systems.";
+      ? "Desenvolvedor back-end | Python, Java, automação e sistemas inteligentes."
+      : "Back-end developer | Python, Java, automation and intelligent systems.";
 
     const statYears = document.querySelector('[data-i18n="statYears"]');
     if (statYears) statYears.textContent = currentLang === "pt" ? "anos construindo" : "years building";
