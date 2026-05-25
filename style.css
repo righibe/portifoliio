@@ -27,9 +27,10 @@
 html,
 body {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   margin: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
@@ -226,17 +227,24 @@ button {
 .experience {
   position: relative;
   z-index: 2;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100vh;
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  padding: 120px 0 80px;
+}
+
+.experience::before,
+.experience::after {
+  content: "";
+  flex: 1;
 }
 
 .identity {
-  position: absolute;
-  left: clamp(22px, 5vw, 72px);
-  top: 50%;
+  position: relative;
+  margin: 0 0 0 clamp(22px, 5vw, 72px);
   width: min(560px, calc(100vw - 44px));
-  transform: translateY(-50%);
   opacity: 0;
   animation: emerge 1600ms 380ms var(--ease) forwards;
   transition: opacity 420ms var(--ease), transform 420ms var(--ease), filter 420ms var(--ease);
@@ -959,7 +967,7 @@ button {
 
 /* ─── Hint ───────────────────────────────────────────────────────────────── */
 .hint {
-  position: absolute;
+  position: fixed;
   left: 50%;
   bottom: 30px;
   transform: translateX(-50%);
@@ -986,7 +994,7 @@ button {
 
 /* ─── Explore HUD ────────────────────────────────────────────────────────── */
 .explore-hud {
-  position: absolute;
+  position: fixed;
   left: 50%;
   top: 88px;
   transform: translateX(-50%) translateY(-12px);
@@ -1173,7 +1181,7 @@ button {
 body.content-open .identity {
   opacity: 0;
   filter: blur(10px);
-  transform: translateY(-48%) scale(0.98);
+  transform: translateY(-20px) scale(0.98);
   pointer-events: none;
 }
 
@@ -1213,12 +1221,12 @@ body.content-open .hint {
   from {
     opacity: 0;
     filter: blur(12px);
-    transform: translateY(-47%) scale(0.985);
+    transform: translateY(20px) scale(0.985);
   }
   to {
     opacity: 1;
     filter: blur(0);
-    transform: translateY(-50%) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
