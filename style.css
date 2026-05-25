@@ -407,7 +407,7 @@ button {
   color: rgba(143, 180, 255, 0.9);
   min-height: 40px;
   display: block;
-  overflow-x: auto;
+  overflow: hidden;
 }
 .terminal__body pre,
 .terminal__body code,
@@ -418,7 +418,7 @@ button {
   overflow-wrap: normal !important;
 }
 .terminal__body pre {
-  font-size: clamp(0.4rem, 2.5vmin, 0.85rem) !important;
+  font-size: min(0.85rem, 4vw) !important;
   line-height: 1.2 !important;
   overflow: visible;
 }
