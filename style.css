@@ -18,6 +18,20 @@
   --shadow: rgba(30, 58, 138, 0.24);
   --font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --identity-scale: 1;
+}
+
+@media (max-height: 850px), (max-width: 1200px) {
+  :root { --identity-scale: 0.85; }
+}
+@media (max-height: 700px), (max-width: 1000px) {
+  :root { --identity-scale: 0.70; }
+}
+@media (max-height: 550px), (max-width: 800px) {
+  :root { --identity-scale: 0.55; }
+}
+@media (max-width: 620px) {
+  :root { --identity-scale: 1; }
 }
 
 * {
@@ -27,10 +41,9 @@
 html,
 body {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   margin: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 body {
@@ -227,24 +240,18 @@ button {
 .experience {
   position: relative;
   z-index: 2;
-  width: 100%;
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  padding: 120px 0 80px;
-}
-
-.experience::before,
-.experience::after {
-  content: "";
-  flex: 1;
 }
 
 .identity {
-  position: relative;
-  margin: 0 0 0 clamp(22px, 5vw, 72px);
+  position: absolute;
+  left: clamp(22px, 5vw, 72px);
+  top: 50%;
   width: min(560px, calc(100vw - 44px));
+  transform: translateY(-50%) scale(var(--identity-scale));
+  transform-origin: left center;
   opacity: 0;
   animation: emerge 1600ms 380ms var(--ease) forwards;
   transition: opacity 420ms var(--ease), transform 420ms var(--ease), filter 420ms var(--ease);
@@ -967,7 +974,7 @@ button {
 
 /* ─── Hint ───────────────────────────────────────────────────────────────── */
 .hint {
-  position: fixed;
+  position: absolute;
   left: 50%;
   bottom: 30px;
   transform: translateX(-50%);
@@ -994,7 +1001,7 @@ button {
 
 /* ─── Explore HUD ────────────────────────────────────────────────────────── */
 .explore-hud {
-  position: fixed;
+  position: absolute;
   left: 50%;
   top: 88px;
   transform: translateX(-50%) translateY(-12px);
@@ -1181,7 +1188,7 @@ button {
 body.content-open .identity {
   opacity: 0;
   filter: blur(10px);
-  transform: translateY(-20px) scale(0.98);
+  transform: translateY(-48%) scale(calc(var(--identity-scale) * 0.98));
   pointer-events: none;
 }
 
@@ -1221,12 +1228,12 @@ body.content-open .hint {
   from {
     opacity: 0;
     filter: blur(12px);
-    transform: translateY(20px) scale(0.985);
+    transform: translateY(-47%) scale(calc(var(--identity-scale) - 0.015));
   }
   to {
     opacity: 1;
     filter: blur(0);
-    transform: translateY(0) scale(1);
+    transform: translateY(-50%) scale(var(--identity-scale));
   }
 }
 
@@ -1259,7 +1266,8 @@ body.content-open .hint {
 
   .identity {
     top: 28%;
-    transform: none;
+    transform: scale(var(--identity-scale));
+    transform-origin: left top;
   }
 
   .identity h1 {
@@ -1315,47 +1323,6 @@ body.content-open .hint {
       filter: blur(0);
       transform: translateY(0) scale(1);
     }
-  }
-}
-
-/* ─── Responsive: Height adjustments for short screens ───────────────────── */
-@media (max-height: 700px) {
-  .identity {
-    top: 15%;
-  }
-  .identity__photo {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 10px;
-  }
-  .identity__eyebrow {
-    margin: 0 0 8px;
-    font-size: 0.7rem;
-  }
-  .identity h1 {
-    font-size: clamp(2rem, 5vw, 3rem);
-  }
-  .identity__copy {
-    margin: 10px 0 0;
-    font-size: 0.85rem;
-  }
-  .identity__stats {
-    margin-top: 10px;
-  }
-  .identity__languages {
-    margin-top: 12px;
-    gap: 20px;
-  }
-  .terminal {
-    margin-top: 12px;
-  }
-  .terminal__body {
-    padding: 8px 12px;
-    font-size: 0.7rem;
-    min-height: 30px;
-  }
-  .section-panel {
-    inset: 90px 14px 16px;
   }
 }
 
@@ -1428,146 +1395,4 @@ body.content-open .hint {
     min-width: 70px;
     padding: 10px 8px;
   }
-  
-  .identity__languages {
-    gap: 15px;
-    flex-wrap: wrap;
-  }
-  
-  .terminal {
-    margin-top: 10px;
-  }
 }
-
-/* ─── Responsive: 480px (Mobile portrait) ────────────────────────────────── */
-@media (max-width: 480px) {
-  .topbar {
-    padding: 12px;
-  }
-  .nav {
-    gap: 2px;
-    padding: 4px;
-  }
-  .nav__item {
-    padding: 6px 8px;
-    font-size: 0.75rem;
-  }
-  .lang-toggle {
-    right: 12px;
-    top: 12px;
-    padding: 4px;
-  }
-  .lang-toggle__item {
-    padding: 6px 8px;
-    font-size: 0.65rem;
-  }
-  .identity {
-    top: 20%;
-    left: 12px;
-    width: calc(100vw - 24px);
-  }
-  .identity__photo {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 12px;
-  }
-  .identity__eyebrow {
-    font-size: 0.65rem;
-    margin-bottom: 10px;
-  }
-  .identity h1 {
-    font-size: clamp(1.8rem, 10vw, 2.4rem);
-  }
-  .identity__copy {
-    font-size: 0.85rem;
-    margin-top: 12px;
-  }
-  .istat strong {
-    font-size: 1rem;
-  }
-  .istat span {
-    font-size: 0.65rem;
-  }
-  .lang-badge {
-    font-size: 0.75rem;
-  }
-  .lang-badge small {
-    font-size: 0.6rem;
-  }
-  .terminal__bar {
-    padding: 6px 10px;
-  }
-  .terminal__title {
-    font-size: 0.65rem;
-  }
-  .terminal__body {
-    padding: 8px 12px;
-    font-size: 0.7rem;
-  }
-  .terminal__body pre {
-    font-size: 0.7rem !important;
-  }
-  .section-panel {
-    inset: 110px 10px 10px;
-    padding: 16px;
-    border-radius: 20px;
-  }
-  .panel-title {
-    font-size: clamp(1.6rem, 10vw, 2rem);
-  }
-  .panel-text {
-    font-size: 0.85rem;
-  }
-  .modal {
-    padding: 20px;
-    border-radius: 20px;
-  }
-  .modal-heading i {
-    width: 38px;
-    height: 38px;
-    font-size: 1.1rem;
-  }
-  .modal-heading h2 {
-    font-size: 1.3rem;
-  }
-}
-
-/* ─── Responsive: 360px (Very small phones) ──────────────────────────────── */
-@media (max-width: 360px) {
-  .identity {
-    top: 16%;
-    left: 10px;
-    width: calc(100vw - 20px);
-  }
-  .identity__photo {
-    width: 50px;
-    height: 50px;
-  }
-  .identity h1 {
-    font-size: 1.6rem;
-  }
-  .identity__copy {
-    font-size: 0.8rem;
-    line-height: 1.4;
-  }
-  .identity__languages {
-    gap: 10px;
-  }
-  .istat {
-    min-width: 70px;
-  }
-  .terminal {
-    transform-origin: left top;
-    transform: scale(0.9);
-    width: 111%;
-  }
-  .section-panel {
-    inset: 100px 8px 8px;
-    padding: 12px;
-  }
-  .nav__item {
-    font-size: 0.7rem;
-    padding: 5px 7px;
-  }
-}
-
