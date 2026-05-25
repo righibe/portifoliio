@@ -1310,6 +1310,47 @@ body.content-open .hint {
   }
 }
 
+/* ─── Responsive: Height adjustments for short screens ───────────────────── */
+@media (max-height: 700px) {
+  .identity {
+    top: 15%;
+  }
+  .identity__photo {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 10px;
+  }
+  .identity__eyebrow {
+    margin: 0 0 8px;
+    font-size: 0.7rem;
+  }
+  .identity h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+  }
+  .identity__copy {
+    margin: 10px 0 0;
+    font-size: 0.85rem;
+  }
+  .identity__stats {
+    margin-top: 10px;
+  }
+  .identity__languages {
+    margin-top: 12px;
+    gap: 20px;
+  }
+  .terminal {
+    margin-top: 12px;
+  }
+  .terminal__body {
+    padding: 8px 12px;
+    font-size: 0.7rem;
+    min-height: 30px;
+  }
+  .section-panel {
+    inset: 90px 14px 16px;
+  }
+}
+
 /* ─── Responsive: 620px ──────────────────────────────────────────────────── */
 @media (max-width: 620px) {
   .topbar {
@@ -1379,4 +1420,146 @@ body.content-open .hint {
     min-width: 70px;
     padding: 10px 8px;
   }
+  
+  .identity__languages {
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  
+  .terminal {
+    margin-top: 10px;
+  }
 }
+
+/* ─── Responsive: 480px (Mobile portrait) ────────────────────────────────── */
+@media (max-width: 480px) {
+  .topbar {
+    padding: 12px;
+  }
+  .nav {
+    gap: 2px;
+    padding: 4px;
+  }
+  .nav__item {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
+  .lang-toggle {
+    right: 12px;
+    top: 12px;
+    padding: 4px;
+  }
+  .lang-toggle__item {
+    padding: 6px 8px;
+    font-size: 0.65rem;
+  }
+  .identity {
+    top: 20%;
+    left: 12px;
+    width: calc(100vw - 24px);
+  }
+  .identity__photo {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 12px;
+  }
+  .identity__eyebrow {
+    font-size: 0.65rem;
+    margin-bottom: 10px;
+  }
+  .identity h1 {
+    font-size: clamp(1.8rem, 10vw, 2.4rem);
+  }
+  .identity__copy {
+    font-size: 0.85rem;
+    margin-top: 12px;
+  }
+  .istat strong {
+    font-size: 1rem;
+  }
+  .istat span {
+    font-size: 0.65rem;
+  }
+  .lang-badge {
+    font-size: 0.75rem;
+  }
+  .lang-badge small {
+    font-size: 0.6rem;
+  }
+  .terminal__bar {
+    padding: 6px 10px;
+  }
+  .terminal__title {
+    font-size: 0.65rem;
+  }
+  .terminal__body {
+    padding: 8px 12px;
+    font-size: 0.7rem;
+  }
+  .terminal__body pre {
+    font-size: 0.7rem !important;
+  }
+  .section-panel {
+    inset: 110px 10px 10px;
+    padding: 16px;
+    border-radius: 20px;
+  }
+  .panel-title {
+    font-size: clamp(1.6rem, 10vw, 2rem);
+  }
+  .panel-text {
+    font-size: 0.85rem;
+  }
+  .modal {
+    padding: 20px;
+    border-radius: 20px;
+  }
+  .modal-heading i {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+  }
+  .modal-heading h2 {
+    font-size: 1.3rem;
+  }
+}
+
+/* ─── Responsive: 360px (Very small phones) ──────────────────────────────── */
+@media (max-width: 360px) {
+  .identity {
+    top: 16%;
+    left: 10px;
+    width: calc(100vw - 20px);
+  }
+  .identity__photo {
+    width: 50px;
+    height: 50px;
+  }
+  .identity h1 {
+    font-size: 1.6rem;
+  }
+  .identity__copy {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  .identity__languages {
+    gap: 10px;
+  }
+  .istat {
+    min-width: 70px;
+  }
+  .terminal {
+    transform-origin: left top;
+    transform: scale(0.9);
+    width: 111%;
+  }
+  .section-panel {
+    inset: 100px 8px 8px;
+    padding: 12px;
+  }
+  .nav__item {
+    font-size: 0.7rem;
+    padding: 5px 7px;
+  }
+}
+
