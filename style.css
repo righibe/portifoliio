@@ -112,7 +112,6 @@ button {
   pointer-events: none;
 }
 
-/* ─── Signal group (logo + social icons) ────────────────────────────────── */
 .signal-group {
   display: flex;
   align-items: center;

@@ -401,7 +401,7 @@ function renderPanel(key) {
   if (data.projects) {
     html += `<div class="project-flow">${data.projects.map((projectKey, index) => {
       const project = projects[projectKey];
-      return `<button class="project-card stagger-item" style="animation-delay: ${100 + index * 50}ms" data-project="${projectKey}"><i class="${project.icon}"></i><strong>${project.title}</strong><span>${project.tech.join(" / ")}</span><p>${t(project.desc)}</p><small>${t(project.impact)}</small></button>`;
+      return `<button class="project-card stagger-item" style="animation-delay: ${100 + index * 50}ms" data-project="${projectKey}"><i class="${project.icon}"></i><strong>${t(project.title)}</strong><span>${project.tech.join(" / ")}</span><p>${t(project.desc)}</p><small>${t(project.impact)}</small></button>`;
     }).join("")}</div>`;
   }
 
@@ -423,7 +423,7 @@ function openProject(key) {
   modalContent.innerHTML = `
     <div class="modal-heading">
       <i class="${project.icon}"></i>
-      <h2 id="modal-title">${project.title}</h2>
+      <h2 id="modal-title">${t(project.title)}</h2>
     </div>
     <p>${t(project.desc)}</p>
     <div class="modal-impact"><strong>${currentLang === "pt" ? "Impacto" : "Impact"}:</strong> ${t(project.impact)}</div>

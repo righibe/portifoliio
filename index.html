@@ -173,7 +173,7 @@
             en: "A compact view of projects involving automation, AI, CRUD architecture and delivery workflows.",
             pt: "Uma visão compacta de projetos com automação, IA, arquitetura CRUD e fluxos de entrega."
           },
-          projects: ["cicd", "aibot", "questbot", "cadastro", "django"]
+          projects: ["predictprices", "supportagent", "cicd", "aibot", "questbot", "cadastro", "django"]
         },
         contact: {
           kicker: { en: "Open channel", pt: "Canal aberto" },
@@ -191,6 +191,22 @@
         }
       },
       projects: {
+        predictprices: {
+          icon: "fa-solid fa-chart-line",
+          title: { en: "SP Real Estate Price Predictor", pt: "Predição de Preços de Imóveis SP" },
+          desc: { en: "Machine Learning application that predicts house and apartment prices in São Paulo. Uses property features like area, rooms, bathrooms, parking spots, property tax (IPTU) and condo fees to estimate sale value. Trains multiple Decision Tree models with varying depths and evaluates each using Mean Absolute Error (MAE) to select the best configuration.", pt: "Aplicação de Machine Learning que prevê preços de casas e apartamentos em São Paulo. Utiliza características do imóvel como área útil, quartos, banheiros, vagas de garagem, IPTU e taxa de condomínio para estimar o valor de venda. Treina múltiplos modelos de Árvore de Decisão com diferentes profundidades e avalia cada um usando Erro Médio Absoluto (MAE) para selecionar a melhor configuração." },
+          impact: { en: "Demonstrates end-to-end ML pipeline: data cleaning, feature engineering, model training, hyperparameter tuning and evaluation on a real-world dataset.", pt: "Demonstra pipeline completo de ML: limpeza de dados, engenharia de features, treinamento de modelos, ajuste de hiperparâmetros e avaliação em dataset real." },
+          tech: ["Python", "Machine Learning", "Decision Trees", "Pandas"],
+          link: "https://github.com/righibe/predict-prices-sp"
+        },
+        supportagent: {
+          icon: "fa-solid fa-headset",
+          title: { en: "AI Technical Support Agent", pt: "Agente de Suporte Técnico com IA" },
+          desc: { en: "Intelligent technical support agent powered by GPT-4o that handles user issues through natural conversation. Features tool-calling capabilities, context-aware responses based on conversation history, and structured problem-solving workflows. Designed to simulate a real support experience with memory and actionable suggestions.", pt: "Agente inteligente de suporte técnico com GPT-4o que resolve problemas do usuário através de conversa natural. Possui capacidade de chamada de ferramentas (tool calling), respostas contextuais baseadas no histórico da conversa e fluxos estruturados de resolução de problemas. Projetado para simular uma experiência real de suporte com memória e sugestões acionáveis." },
+          impact: { en: "Shows practical use of LLM agents with tool integration, conversation memory and structured output for enterprise-grade support automation.", pt: "Demonstra uso prático de agentes LLM com integração de ferramentas, memória de conversa e saída estruturada para automação de suporte corporativo." },
+          tech: ["Python", "GPT-4o", "LangChain", "AI Agents"],
+          link: "https://github.com/righibe/technical-suport-Agent"
+        },
         cicd: {
           icon: "fa-brands fa-github",
           title: "CI/CD Pipeline in Python",
