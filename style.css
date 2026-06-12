@@ -79,10 +79,11 @@ button {
   width: 34vw;
   aspect-ratio: 1;
   border-radius: 999px;
-  filter: blur(80px);
+  filter: blur(44px);
   opacity: 0.04;
   pointer-events: none;
   z-index: 1;
+  will-change: transform;
 }
 
 .aura-one {
@@ -176,7 +177,7 @@ button {
   border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.64);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(10px);
   pointer-events: auto;
 }
 
@@ -187,7 +188,7 @@ button {
   border-radius: 999px;
   border: 1px solid rgba(245, 247, 251, 0.1);
   background: rgba(0, 0, 0, 0.64);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(10px);
   pointer-events: auto;
 }
 
@@ -470,8 +471,9 @@ button {
   border-radius: 30px;
   background: linear-gradient(145deg, rgba(0, 0, 0, 0.85), rgba(5, 6, 11, 0.8));
   box-shadow: 0 30px 120px rgba(0, 0, 0, 0.74), inset 0 1px 0 rgba(255, 255, 255, 0.045);
-  backdrop-filter: blur(45px);
+  backdrop-filter: blur(20px);
   pointer-events: none;
+  contain: paint;
 }
 
 .section-panel.active {
@@ -1007,7 +1009,7 @@ button {
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.12);
   background: rgba(0, 0, 0, 0.62);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(8px);
 }
 
 .hint__dot {
@@ -1033,7 +1035,7 @@ button {
   border-radius: 999px;
   border: 1px solid rgba(34, 211, 238, 0.24);
   background: rgba(7, 11, 20, 0.48);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(8px);
   transition: opacity 300ms var(--ease), transform 300ms var(--ease);
   font-family: var(--mono);
   color: var(--soft);
@@ -1091,7 +1093,7 @@ button {
   place-items: center;
   padding: 18px;
   background: rgba(0, 0, 0, 0.82);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(10px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 260ms var(--ease);

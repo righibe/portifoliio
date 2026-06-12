@@ -34,6 +34,8 @@ let nodes = [];
 let filaments = [];
 let sparks = [];
 let debris = [];
+let bosses = [];
+let nextBossScore = 100;
 
 let astronauts = [];
 let exploreMode = false;
@@ -42,6 +44,8 @@ let ship = { x: 0, y: 0, tx: 0, ty: 0, vx: 0, vy: 0, angle: 0, lastShot: 0 };
 let bullets = [];
 let keysDown = new Set();
 const bootTime = performance.now();
+let touchMove = null;   // { id, startX, startY, currentX, currentY }
+let touchFire  = false;
 
 // ─── Adaptive Quality System ──────────────────────────────────────────────
 // Quality tiers: 3 = high, 2 = medium, 1 = low
@@ -446,6 +450,8 @@ function activateExploreMode() {
   asteroids = [];
   bullets = [];
   debris = [];
+  bosses = [];
+  nextBossScore = 100;
   ship.angle = 0;
   ship.lastShot = 0;
   document.body.classList.add("content-open");
@@ -644,10 +650,18 @@ function updateExplore(delta) {
 
   let ax = 0;
   let ay = 0;
-  if (keysDown.has("a")) ax -= 0.42;
-  if (keysDown.has("d")) ax += 0.42;
-  if (keysDown.has("w")) ay -= 0.42;
-  if (keysDown.has("s")) ay += 0.42;
+  if (keysDown.has("a") || keysDown.has("ArrowLeft"))  ax -= 0.42;
+  if (keysDown.has("d") || keysDown.has("ArrowRight")) ax += 0.42;
+  if (keysDown.has("w") || keysDown.has("ArrowUp"))    ay -= 0.42;
+  if (keysDown.has("s") || keysDown.has("ArrowDown"))  ay += 0.42;
+
+  // Touch joystick
+  if (touchMove) {
+    const tdx = touchMove.currentX - touchMove.startX;
+    const tdy = touchMove.currentY - touchMove.startY;
+    const tlen = Math.hypot(tdx, tdy);
+    if (tlen > 10) { ax += (tdx / tlen) * 0.42; ay += (tdy / tlen) * 0.42; }
+  }
 
   ship.vx += ax;
   ship.vy += ay;
@@ -670,7 +684,7 @@ function updateExplore(delta) {
     a.spin += (Math.random() - 0.5) * 0.001;
   });
 
-  if (keysDown.has(" ")) {
+  if (keysDown.has(" ") || keysDown.has("Enter") || touchFire) {
     if (time - ship.lastShot > 180) {
       const speed = 16;
       bullets.push({
@@ -690,15 +704,28 @@ function updateExplore(delta) {
   });
   bullets = bullets.filter(b => b.x > -50 && b.x < width + 50 && b.y > -50 && b.y < height + 50 && !b.hit);
 
-  if (Math.random() < 0.025 * delta) {
-    asteroids.push({
-      x: Math.random() * width,
-      y: -40,
-      r: 14,
-      vx: (Math.random() - 0.5) * 1.5,
-      vy: 1.0 + Math.random() * 1.5,
-      hit: false
-    });
+  // Difficulty scaling — increases every 60 pts
+  const diffMult = 1 + Math.floor(Math.max(0, score) / 60) * 0.14;
+
+  if (Math.random() < Math.min(0.065, 0.020 * diffMult) * delta) {
+    // At higher scores asteroids come from all sides
+    const side = score > 150 ? Math.floor(Math.random() * 4) : 0;
+    let ax2, ay2, avx, avy;
+    const spd = (0.8 + Math.random() * 1.4) * Math.min(diffMult, 3.0);
+    if (side === 0) {
+      ax2 = Math.random() * width; ay2 = -40;
+      avx = (Math.random() - 0.5) * 1.5; avy = spd;
+    } else if (side === 1) {
+      ax2 = width + 40; ay2 = Math.random() * height;
+      avx = -spd; avy = (Math.random() - 0.5) * 1.5;
+    } else if (side === 2) {
+      ax2 = Math.random() * width; ay2 = height + 40;
+      avx = (Math.random() - 0.5) * 1.5; avy = -spd;
+    } else {
+      ax2 = -40; ay2 = Math.random() * height;
+      avx = spd; avy = (Math.random() - 0.5) * 1.5;
+    }
+    asteroids.push({ x: ax2, y: ay2, r: 11 + Math.random() * 5, vx: avx, vy: avy, hit: false });
   }
 
   // Update debris positions and fade out
@@ -754,7 +781,80 @@ function updateExplore(delta) {
       }
     }
   });
-  asteroids = asteroids.filter(enemy => enemy.y < height + 60 && !enemy.hit);
+  asteroids = asteroids.filter(e => !e.hit && e.x > -100 && e.x < width + 100 && e.y > -100 && e.y < height + 100);
+
+  // ── Boss spawning every 100 points ───────────────────────────────────
+  if (score >= nextBossScore && bosses.length === 0) {
+    const tier = Math.floor((nextBossScore - 100) / 100);
+    nextBossScore += 100;
+    const side = Math.floor(Math.random() * 4);
+    let bx, by;
+    if (side === 0) { bx = Math.random() * width; by = -80; }
+    else if (side === 1) { bx = width + 80; by = Math.random() * height; }
+    else if (side === 2) { bx = Math.random() * width; by = height + 80; }
+    else { bx = -80; by = Math.random() * height; }
+    const bossHp = 5 + tier * 3;
+    bosses.push({
+      x: bx, y: by,
+      r: 28 + tier * 5,
+      hp: bossHp, maxHp: bossHp,
+      vx: 0, vy: 0,
+      angle: 0, spin: 0.009 + tier * 0.003,
+      hit: false, pulse: 0,
+      tier
+    });
+  }
+
+  // ── Boss update ───────────────────────────────────────────────────────
+  bosses.forEach(boss => {
+    const dx = ship.x - boss.x;
+    const dy = ship.y - boss.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const bossDiff = 1 + boss.tier * 0.18;
+    boss.vx += (dx / dist) * 0.10 * bossDiff;
+    boss.vy += (dy / dist) * 0.10 * bossDiff;
+    const maxSpd = 2.2 + boss.tier * 0.4;
+    const spd = Math.hypot(boss.vx, boss.vy);
+    if (spd > maxSpd) { boss.vx *= maxSpd / spd; boss.vy *= maxSpd / spd; }
+    boss.x += boss.vx * delta;
+    boss.y += boss.vy * delta;
+    boss.angle += boss.spin * delta;
+    boss.pulse += 0.045 * delta;
+
+    bullets.forEach(b => {
+      if (!b.hit && !boss.hit) {
+        if (Math.hypot(b.x - boss.x, b.y - boss.y) < boss.r + 6) {
+          b.hit = true;
+          boss.hp--;
+          for (let i = 0; i < 5; i++) {
+            debris.push({ x: b.x, y: b.y, vx: (Math.random()-0.5)*2.2, vy: (Math.random()-0.5)*2.2,
+              size: 1.5 + Math.random()*2, alpha: 0.75, fade: 0.02 + Math.random()*0.02 });
+          }
+          if (boss.hp <= 0) {
+            boss.hit = true;
+            score += 100;
+            exploreScore.textContent = String(score);
+            for (let i = 0; i < 22; i++) {
+              debris.push({ x: boss.x + (Math.random()-0.5)*boss.r, y: boss.y + (Math.random()-0.5)*boss.r,
+                vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4,
+                size: 2 + Math.random()*4, alpha: 0.95, fade: 0.005 + Math.random()*0.012 });
+            }
+          }
+        }
+      }
+    });
+
+    if (!boss.hit && Math.hypot(boss.x - ship.x, boss.y - ship.y) < boss.r + 17) {
+      boss.hit = true;
+      score -= 100;
+      exploreScore.textContent = String(score);
+      for (let i = 0; i < 14; i++) {
+        debris.push({ x: boss.x, y: boss.y, vx: (Math.random()-0.5)*3, vy: (Math.random()-0.5)*3,
+          size: 2 + Math.random()*3, alpha: 0.85, fade: 0.007 + Math.random()*0.014 });
+      }
+    }
+  });
+  bosses = bosses.filter(b => !b.hit && b.x > -250 && b.x < width+250 && b.y > -250 && b.y < height+250);
 }
 
 function drawExplore() {
@@ -809,6 +909,64 @@ function drawExplore() {
     ctx.arc(0, -13, 2.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
+  });
+
+  // ── Draw bosses ───────────────────────────────────────────────────────
+  bosses.forEach(boss => {
+    const pulse = Math.sin(boss.pulse) * 0.14 + 1;
+    const hpFrac = boss.hp / boss.maxHp;
+    const bR = hpFrac > 0.6 ? "143,29,44" : hpFrac > 0.3 ? "200,100,20" : "220,50,10";
+
+    ctx.save();
+    ctx.translate(boss.x, boss.y);
+    ctx.rotate(boss.angle);
+
+    // Outer glow
+    ctx.beginPath();
+    ctx.arc(0, 0, boss.r * 1.7 * pulse, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${bR}, 0.07)`;
+    ctx.fill();
+
+    // Spiky body
+    const spikes = 8 + boss.tier * 2;
+    ctx.beginPath();
+    for (let i = 0; i < spikes * 2; i++) {
+      const ang = (i / (spikes * 2)) * Math.PI * 2;
+      const r = i % 2 === 0 ? boss.r * pulse : boss.r * 0.55 * pulse;
+      if (i === 0) ctx.moveTo(Math.cos(ang) * r, Math.sin(ang) * r);
+      else ctx.lineTo(Math.cos(ang) * r, Math.sin(ang) * r);
+    }
+    ctx.closePath();
+    ctx.fillStyle = `rgba(${bR}, 0.90)`;
+    ctx.shadowColor = `rgba(${bR}, 0.65)`;
+    ctx.shadowBlur = 20;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Inner core
+    ctx.beginPath();
+    ctx.arc(0, 0, boss.r * 0.40 * pulse, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255, 185, 65, 0.92)";
+    ctx.fill();
+
+    ctx.restore();
+
+    // Health bar above boss
+    const barW = boss.r * 2.8;
+    const barH = 5;
+    const barX = boss.x - barW / 2;
+    const barY = boss.y - boss.r * 1.9;
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.beginPath(); ctx.roundRect(barX, barY, barW, barH, 3); ctx.fill();
+    ctx.fillStyle = hpFrac > 0.6 ? "#22c55e" : hpFrac > 0.3 ? "#f59e0b" : "#ef4444";
+    ctx.beginPath(); ctx.roundRect(barX, barY, barW * hpFrac, barH, 3); ctx.fill();
+
+    // BOSS label
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.font = "bold 9px JetBrains Mono, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(`BOSS ${boss.tier > 0 ? "★".repeat(Math.min(boss.tier,4)) : ""}`, boss.x, barY - 4);
+    ctx.textAlign = "left";
   });
 
   ctx.save();
@@ -984,6 +1142,38 @@ window.addEventListener("keyup", event => {
   keysDown.delete(event.key);
 });
 
+// ─── Touch controls for explore mode ────────────────────────────────────
+canvas.addEventListener("touchstart", e => {
+  if (!exploreMode) return;
+  e.preventDefault();
+  for (const touch of e.changedTouches) {
+    if (touch.clientX < width * 0.6 && !touchMove) {
+      touchMove = { id: touch.identifier, startX: touch.clientX, startY: touch.clientY,
+                    currentX: touch.clientX, currentY: touch.clientY };
+    } else {
+      touchFire = true;
+    }
+  }
+}, { passive: false });
+
+canvas.addEventListener("touchmove", e => {
+  if (!exploreMode) return;
+  e.preventDefault();
+  for (const touch of e.changedTouches) {
+    if (touchMove && touch.identifier === touchMove.id) {
+      touchMove.currentX = touch.clientX;
+      touchMove.currentY = touch.clientY;
+    }
+  }
+}, { passive: false });
+
+canvas.addEventListener("touchend", e => {
+  for (const touch of e.changedTouches) {
+    if (touchMove && touch.identifier === touchMove.id) touchMove = null;
+    else touchFire = false;
+  }
+});
+
 window.addEventListener("resize", resize);
 
 resize();
@@ -1005,228 +1195,245 @@ function drawBlackHole(cx, cy, t) {
   ctx.save();
   ctx.translate(cx, cy);
 
-  // Scale the black hole proportionally to screen size so it looks the same on 4K
   const sf = quality.scaleFactor;
-  const R = (width < 768 ? 50 : 80) * sf;
-  const pulse = 1 + Math.sin(t * 0.0018) * 0.012;
+  const R = (width < 768 ? 46 : 74) * sf;
+  const pulse = 1 + Math.sin(t * 0.0018) * 0.009;
   const useShadow = quality.bhShadows;
+  const tilt = 0.20;            // disk tilt — Interstellar look
+  const diskW = R * 3.9 * pulse;
+  const diskH = R * 0.35;       // thin = dramatic
+  const lR = R * 1.64;          // lensing arc radius
 
-  // ── 1. Deep ambient glow ────────────────────────────────────────────
-  const ambientR = R * 5.5;
-  const ambient = ctx.createRadialGradient(0, 0, R * 0.5, 0, 0, ambientR);
-  ambient.addColorStop(0, "rgba(255, 170, 60, 0.08)");
-  ambient.addColorStop(0.25, "rgba(200, 100, 20, 0.04)");
-  ambient.addColorStop(0.5, "rgba(120, 40, 5, 0.02)");
-  ambient.addColorStop(1, "rgba(0, 0, 0, 0)");
-  ctx.fillStyle = ambient;
+  // ── 1. Deep ambient glow ──────────────────────────────────────────
+  const ambR = R * 5.8;
+  const amb = ctx.createRadialGradient(0, 0, R * 0.7, 0, 0, ambR);
+  amb.addColorStop(0,    "rgba(255, 145, 45, 0.12)");
+  amb.addColorStop(0.22, "rgba(200, 85,  20, 0.055)");
+  amb.addColorStop(0.48, "rgba(90,  30,  5,  0.022)");
+  amb.addColorStop(1,    "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = amb;
   ctx.beginPath();
-  ctx.arc(0, 0, ambientR, 0, Math.PI * 2);
+  ctx.arc(0, 0, ambR, 0, Math.PI * 2);
   ctx.fill();
 
-  // ── 2. Outer accretion disk (behind the black hole) ─────────────────
+  // ── 2. Back half of accretion disk (behind event horizon) ─────────
   ctx.save();
-  const diskW = R * 4.2 * pulse;
-  const diskH = R * 0.48;
+  ctx.rotate(tilt);
 
-  // Outer cool layers (quality-adaptive count)
   for (let layer = 0; layer < quality.bhLayers; layer++) {
-    const layerAlpha = 0.12 - layer * 0.03;
-    const layerW = diskW + layer * R * 0.6;
-    const layerH = diskH + layer * R * 0.05;
+    const lw = diskW + layer * R * 0.55;
+    const lh = diskH + layer * R * 0.044;
+    const la = 0.09 - layer * 0.022;
     ctx.beginPath();
-    ctx.ellipse(0, 0, layerW, layerH, 0, Math.PI, Math.PI * 2);
-    const outerGrad = ctx.createLinearGradient(-layerW, 0, layerW, 0);
-    outerGrad.addColorStop(0, `rgba(140, 160, 200, ${layerAlpha * 0.7})`);
-    outerGrad.addColorStop(0.3, `rgba(180, 100, 40, ${layerAlpha})`);
-    outerGrad.addColorStop(0.5, `rgba(220, 140, 50, ${layerAlpha * 1.2})`);
-    outerGrad.addColorStop(0.7, `rgba(255, 130, 30, ${layerAlpha})`);
-    outerGrad.addColorStop(1, `rgba(200, 60, 10, ${layerAlpha * 0.5})`);
-    ctx.fillStyle = outerGrad;
+    ctx.ellipse(0, 0, lw, lh, 0, Math.PI, Math.PI * 2);
+    // Doppler: left = blue-white (approaching), right = orange-red (receding)
+    const bg = ctx.createLinearGradient(-lw, 0, lw, 0);
+    bg.addColorStop(0,    `rgba(155, 198, 255, ${la * 1.1})`);
+    bg.addColorStop(0.28, `rgba(255, 235, 178, ${la * 1.65})`);
+    bg.addColorStop(0.5,  `rgba(255, 215, 118, ${la * 1.95})`);
+    bg.addColorStop(0.72, `rgba(255, 145, 38,  ${la * 1.35})`);
+    bg.addColorStop(1,    `rgba(200, 60,  10,  ${la * 0.52})`);
+    ctx.fillStyle = bg;
     ctx.fill();
   }
 
-  // Main bright accretion disk (back half)
-  const backDiskGrad = ctx.createRadialGradient(0, 0, R * 1.05, 0, 0, diskW);
-  backDiskGrad.addColorStop(0, "rgba(255, 255, 240, 0.95)");
-  backDiskGrad.addColorStop(0.12, "rgba(255, 240, 180, 0.9)");
-  backDiskGrad.addColorStop(0.25, "rgba(255, 200, 100, 0.7)");
-  backDiskGrad.addColorStop(0.45, "rgba(255, 140, 40, 0.45)");
-  backDiskGrad.addColorStop(0.65, "rgba(200, 70, 10, 0.2)");
-  backDiskGrad.addColorStop(0.85, "rgba(100, 25, 0, 0.08)");
-  backDiskGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+  const bdg = ctx.createRadialGradient(0, 0, R * 1.0, 0, 0, diskW * 0.82);
+  bdg.addColorStop(0,    "rgba(255, 255, 250, 0.98)");
+  bdg.addColorStop(0.08, "rgba(255, 245, 198, 0.91)");
+  bdg.addColorStop(0.20, "rgba(255, 210, 124, 0.71)");
+  bdg.addColorStop(0.38, "rgba(255, 152, 48,  0.44)");
+  bdg.addColorStop(0.60, "rgba(220, 80,  14,  0.17)");
+  bdg.addColorStop(0.85, "rgba(100, 25,  0,   0.05)");
+  bdg.addColorStop(1,    "rgba(0, 0, 0, 0)");
   ctx.beginPath();
   ctx.ellipse(0, 0, diskW, diskH, 0, Math.PI, Math.PI * 2);
-  ctx.fillStyle = backDiskGrad;
+  ctx.fillStyle = bdg;
   ctx.fill();
+
+  // ISCO bright ring — back half
+  ctx.beginPath();
+  ctx.ellipse(0, 0, R * 1.46, R * 0.13, 0, Math.PI + 0.08, Math.PI * 2 - 0.08);
+  ctx.lineWidth = R * 0.086;
+  const ibg = ctx.createLinearGradient(-R * 1.5, 0, R * 1.5, 0);
+  ibg.addColorStop(0,   "rgba(195, 225, 255, 0.68)");
+  ibg.addColorStop(0.3, "rgba(255, 252, 230, 0.95)");
+  ibg.addColorStop(0.5, "rgba(255, 255, 252, 1.0)");
+  ibg.addColorStop(0.7, "rgba(255, 222, 160, 0.88)");
+  ibg.addColorStop(1,   "rgba(255, 152, 52,  0.38)");
+  ctx.strokeStyle = ibg;
+  if (useShadow) { ctx.shadowColor = "rgba(255, 250, 230, 0.82)"; ctx.shadowBlur = R * 0.22; }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
   ctx.restore();
 
-  // ── 3. Gravitational lensing arc (Einstein ring - top) ──────────────
+  // ── 3. Top gravitational lensing arc (ghost image of disk above BH) ─
   ctx.save();
-  const lensR = R * 1.55;
 
-  // Outer lensing glow
   ctx.beginPath();
-  ctx.ellipse(0, -R * 0.05, lensR * 1.15, lensR * 1.18, 0, Math.PI + 0.15, -0.15);
-  ctx.lineWidth = R * 0.38;
-  const lensOuterGrad = ctx.createLinearGradient(-lensR, -lensR, lensR, -lensR * 0.3);
-  lensOuterGrad.addColorStop(0, "rgba(180, 200, 240, 0.15)");
-  lensOuterGrad.addColorStop(0.2, "rgba(255, 220, 140, 0.35)");
-  lensOuterGrad.addColorStop(0.5, "rgba(255, 240, 200, 0.5)");
-  lensOuterGrad.addColorStop(0.8, "rgba(255, 200, 100, 0.3)");
-  lensOuterGrad.addColorStop(1, "rgba(255, 140, 40, 0.1)");
-  ctx.strokeStyle = lensOuterGrad;
+  ctx.ellipse(0, -R * 0.07, lR * 1.14, lR * 1.17, 0, Math.PI + 0.16, -0.16);
+  ctx.lineWidth = R * 0.40;
+  const lOG = ctx.createLinearGradient(-lR, -lR * 0.75, lR, -lR * 0.18);
+  lOG.addColorStop(0,    "rgba(152, 188, 255, 0.12)");
+  lOG.addColorStop(0.25, "rgba(255, 225, 148, 0.32)");
+  lOG.addColorStop(0.5,  "rgba(255, 242, 198, 0.46)");
+  lOG.addColorStop(0.75, "rgba(255, 192, 98,  0.28)");
+  lOG.addColorStop(1,    "rgba(240, 118, 28,  0.10)");
+  ctx.strokeStyle = lOG;
   ctx.stroke();
 
-  // Bright inner lensing arc
   ctx.beginPath();
-  ctx.ellipse(0, -R * 0.05, lensR, lensR * 1.02, 0, Math.PI + 0.2, -0.2);
+  ctx.ellipse(0, -R * 0.07, lR, lR * 1.03, 0, Math.PI + 0.22, -0.22);
   ctx.lineWidth = R * 0.12;
-  const lensInnerGrad = ctx.createLinearGradient(-lensR, -lensR, lensR, -lensR);
-  lensInnerGrad.addColorStop(0, "rgba(200, 220, 255, 0.5)");
-  lensInnerGrad.addColorStop(0.3, "rgba(255, 245, 220, 0.85)");
-  lensInnerGrad.addColorStop(0.5, "rgba(255, 255, 245, 0.95)");
-  lensInnerGrad.addColorStop(0.7, "rgba(255, 230, 180, 0.8)");
-  lensInnerGrad.addColorStop(1, "rgba(255, 180, 80, 0.4)");
-  ctx.strokeStyle = lensInnerGrad;
-  if (useShadow) {
-    ctx.shadowColor = "rgba(255, 240, 200, 0.4)";
-    ctx.shadowBlur = R * 0.3;
-  }
+  const lIG = ctx.createLinearGradient(-lR, -lR, lR, -lR);
+  lIG.addColorStop(0,   "rgba(172, 212, 255, 0.48)");
+  lIG.addColorStop(0.3, "rgba(255, 248, 225, 0.92)");
+  lIG.addColorStop(0.5, "rgba(255, 255, 248, 1.0)");
+  lIG.addColorStop(0.7, "rgba(255, 230, 178, 0.86)");
+  lIG.addColorStop(1,   "rgba(255, 172, 70,  0.36)");
+  ctx.strokeStyle = lIG;
+  if (useShadow) { ctx.shadowColor = "rgba(255, 248, 212, 0.58)"; ctx.shadowBlur = R * 0.40; }
   ctx.stroke();
   ctx.shadowBlur = 0;
   ctx.restore();
 
-  // ── 4. Gravitational lensing arc (bottom - dimmer, reddish) ─────────
+  // ── 4. Bottom lensing arc (dimmer, reddish) ───────────────────────
   ctx.save();
   ctx.beginPath();
-  ctx.ellipse(0, R * 0.08, lensR * 0.95, lensR * 0.98, 0, 0.25, Math.PI - 0.25);
+  ctx.ellipse(0, R * 0.09, lR * 0.92, lR * 0.95, 0, 0.28, Math.PI - 0.28);
   ctx.lineWidth = R * 0.22;
-  const lensBotGrad = ctx.createLinearGradient(-lensR, lensR, lensR, lensR * 0.5);
-  lensBotGrad.addColorStop(0, "rgba(180, 100, 50, 0.1)");
-  lensBotGrad.addColorStop(0.3, "rgba(255, 140, 50, 0.3)");
-  lensBotGrad.addColorStop(0.5, "rgba(255, 180, 100, 0.35)");
-  lensBotGrad.addColorStop(0.7, "rgba(255, 120, 30, 0.25)");
-  lensBotGrad.addColorStop(1, "rgba(200, 60, 10, 0.08)");
-  ctx.strokeStyle = lensBotGrad;
+  const lBG = ctx.createLinearGradient(-lR, lR * 0.8, lR, lR * 0.38);
+  lBG.addColorStop(0,   "rgba(158, 88, 38,   0.08)");
+  lBG.addColorStop(0.3, "rgba(255, 132, 46,  0.28)");
+  lBG.addColorStop(0.5, "rgba(255, 178, 96,  0.34)");
+  lBG.addColorStop(0.7, "rgba(255, 115, 30,  0.22)");
+  lBG.addColorStop(1,   "rgba(190, 54, 10,   0.07)");
+  ctx.strokeStyle = lBG;
   ctx.stroke();
 
-  // Thin bright bottom arc
   ctx.beginPath();
-  ctx.ellipse(0, R * 0.08, lensR * 0.9, lensR * 0.92, 0, 0.35, Math.PI - 0.35);
-  ctx.lineWidth = R * 0.05;
-  const lensBotInner = ctx.createLinearGradient(-lensR, 0, lensR, 0);
-  lensBotInner.addColorStop(0, "rgba(255, 160, 80, 0.2)");
-  lensBotInner.addColorStop(0.5, "rgba(255, 200, 140, 0.5)");
-  lensBotInner.addColorStop(1, "rgba(255, 120, 40, 0.15)");
-  ctx.strokeStyle = lensBotInner;
-  if (useShadow) {
-    ctx.shadowColor = "rgba(255, 150, 60, 0.3)";
-    ctx.shadowBlur = R * 0.15;
-  }
+  ctx.ellipse(0, R * 0.09, lR * 0.87, lR * 0.89, 0, 0.38, Math.PI - 0.38);
+  ctx.lineWidth = R * 0.052;
+  const lBT = ctx.createLinearGradient(-lR, 0, lR, 0);
+  lBT.addColorStop(0,   "rgba(255, 152, 70,  0.18)");
+  lBT.addColorStop(0.5, "rgba(255, 208, 142, 0.54)");
+  lBT.addColorStop(1,   "rgba(255, 118, 38,  0.14)");
+  ctx.strokeStyle = lBT;
+  if (useShadow) { ctx.shadowColor = "rgba(255, 148, 58, 0.28)"; ctx.shadowBlur = R * 0.13; }
   ctx.stroke();
   ctx.shadowBlur = 0;
   ctx.restore();
 
-  // ── 5. Event horizon (the black sphere) ─────────────────────────────
+  // ── 5. Event horizon — perfect black sphere with subtle 3D shading ──
+  const hg = ctx.createRadialGradient(R * 0.14, -R * 0.14, 0, 0, 0, R);
+  hg.addColorStop(0,   "#040404");
+  hg.addColorStop(0.6, "#010101");
+  hg.addColorStop(1,   "#000000");
   ctx.beginPath();
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = hg;
   ctx.arc(0, 0, R, 0, Math.PI * 2);
   ctx.fill();
 
-  // ── 6. Photon ring ──────────────────────────────────────────────────
+  // ── 6. Photon ring (very tight, ultra-bright) ──────────────────────
   ctx.save();
   ctx.beginPath();
-  ctx.arc(0, 0, R * 1.02, 0, Math.PI * 2);
-  ctx.lineWidth = 1.2;
-  const photonGrad = ctx.createLinearGradient(-R, -R, R, R);
-  photonGrad.addColorStop(0, "rgba(200, 220, 255, 0.6)");
-  photonGrad.addColorStop(0.3, "rgba(255, 250, 230, 0.8)");
-  photonGrad.addColorStop(0.7, "rgba(255, 220, 160, 0.7)");
-  photonGrad.addColorStop(1, "rgba(255, 160, 60, 0.4)");
-  ctx.strokeStyle = photonGrad;
-  if (useShadow) {
-    ctx.shadowColor = "rgba(255, 240, 200, 0.6)";
-    ctx.shadowBlur = 6;
-  }
+  ctx.arc(0, 0, R * 1.022, 0, Math.PI * 2);
+  ctx.lineWidth = R * 0.020;
+  const prg = ctx.createLinearGradient(-R, -R, R, R);
+  prg.addColorStop(0,    "rgba(172, 212, 255, 0.74)");
+  prg.addColorStop(0.25, "rgba(255, 255, 238, 0.97)");
+  prg.addColorStop(0.5,  "rgba(255, 248, 222, 1.0)");
+  prg.addColorStop(0.75, "rgba(255, 218, 158, 0.90)");
+  prg.addColorStop(1,    "rgba(255, 158, 56,  0.44)");
+  ctx.strokeStyle = prg;
+  if (useShadow) { ctx.shadowColor = "rgba(255, 248, 212, 0.78)"; ctx.shadowBlur = R * 0.16; }
   ctx.stroke();
   ctx.shadowBlur = 0;
   ctx.restore();
 
-  // ── 7. Front accretion disk ─────────────────────────────────────────
+  // ── 7. Front accretion disk ────────────────────────────────────────
   ctx.save();
-  const frontAlpha = 0.92 + Math.sin(t * 0.003) * 0.06;
-  ctx.globalAlpha = frontAlpha;
+  ctx.rotate(tilt);
+  ctx.globalAlpha = 0.92 + Math.sin(t * 0.0025) * 0.05;
 
-  // Outer layers (quality-adaptive count)
   for (let layer = quality.bhLayers - 1; layer >= 0; layer--) {
-    const lw = diskW + layer * R * 0.5;
-    const lh = diskH + layer * R * 0.04;
-    const la = 0.15 - layer * 0.04;
+    const lw = diskW + layer * R * 0.48;
+    const lh = diskH + layer * R * 0.038;
+    const la = 0.12 - layer * 0.028;
     ctx.beginPath();
     ctx.ellipse(0, 0, lw, lh, 0, 0, Math.PI);
-    const fOuterGrad = ctx.createLinearGradient(-lw, 0, lw, 0);
-    fOuterGrad.addColorStop(0, `rgba(150, 170, 220, ${la * 0.6})`);
-    fOuterGrad.addColorStop(0.25, `rgba(200, 130, 60, ${la})`);
-    fOuterGrad.addColorStop(0.5, `rgba(240, 160, 60, ${la * 1.1})`);
-    fOuterGrad.addColorStop(0.75, `rgba(255, 120, 20, ${la * 0.9})`);
-    fOuterGrad.addColorStop(1, `rgba(180, 50, 5, ${la * 0.4})`);
-    ctx.fillStyle = fOuterGrad;
+    const fg = ctx.createLinearGradient(-lw, 0, lw, 0);
+    fg.addColorStop(0,    `rgba(152, 196, 255, ${la * 0.75})`);
+    fg.addColorStop(0.22, `rgba(218, 138, 58,  ${la * 1.18})`);
+    fg.addColorStop(0.5,  `rgba(244, 164, 62,  ${la * 1.28})`);
+    fg.addColorStop(0.78, `rgba(255, 124, 24,  ${la * 1.04})`);
+    fg.addColorStop(1,    `rgba(175, 48,  5,   ${la * 0.38})`);
+    ctx.fillStyle = fg;
     ctx.fill();
   }
 
-  // Main bright front disk
-  const frontDiskGrad = ctx.createRadialGradient(0, 0, R * 1.05, 0, 0, diskW);
-  frontDiskGrad.addColorStop(0, "rgba(255, 255, 245, 0.98)");
-  frontDiskGrad.addColorStop(0.1, "rgba(255, 245, 200, 0.92)");
-  frontDiskGrad.addColorStop(0.22, "rgba(255, 210, 120, 0.7)");
-  frontDiskGrad.addColorStop(0.4, "rgba(255, 155, 45, 0.45)");
-  frontDiskGrad.addColorStop(0.6, "rgba(220, 80, 10, 0.2)");
-  frontDiskGrad.addColorStop(0.8, "rgba(120, 30, 0, 0.06)");
-  frontDiskGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+  const fdg = ctx.createRadialGradient(0, 0, R * 1.0, 0, 0, diskW * 0.88);
+  fdg.addColorStop(0,    "rgba(255, 255, 248, 1.0)");
+  fdg.addColorStop(0.09, "rgba(255, 248, 210, 0.94)");
+  fdg.addColorStop(0.20, "rgba(255, 215, 130, 0.74)");
+  fdg.addColorStop(0.38, "rgba(255, 158, 48,  0.46)");
+  fdg.addColorStop(0.58, "rgba(225, 82,  12,  0.20)");
+  fdg.addColorStop(0.80, "rgba(120, 32,  0,   0.06)");
+  fdg.addColorStop(1,    "rgba(0, 0, 0, 0)");
   ctx.beginPath();
   ctx.ellipse(0, 0, diskW, diskH, 0, 0, Math.PI);
-  ctx.fillStyle = frontDiskGrad;
-  if (useShadow) {
-    ctx.shadowColor = "rgba(255, 200, 100, 0.5)";
-    ctx.shadowBlur = R * 0.4;
-  }
+  ctx.fillStyle = fdg;
+  if (useShadow) { ctx.shadowColor = "rgba(255, 205, 105, 0.58)"; ctx.shadowBlur = R * 0.45; }
   ctx.fill();
   ctx.shadowBlur = 0;
+
+  // Relativistic beaming: approaching (left) side brighter/bluer
+  if (quality.bhShimmer) {
+    const bX = -diskW * 0.52;
+    const bG = ctx.createRadialGradient(bX, 0, 0, bX, 0, R * 1.55);
+    bG.addColorStop(0,   "rgba(210, 232, 255, 0.32)");
+    bG.addColorStop(0.4, "rgba(190, 218, 255, 0.10)");
+    bG.addColorStop(1,   "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = bG;
+    ctx.beginPath();
+    ctx.ellipse(bX, 0, R * 1.55, diskH * 1.7, 0, 0, Math.PI);
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = 1;
   ctx.restore();
 
-  // ── 8. ISCO glow ring ───────────────────────────────────────────────
+  // ── 8. ISCO ring full (equatorial bright band) ─────────────────────
   ctx.save();
+  ctx.rotate(tilt);
   ctx.beginPath();
-  ctx.ellipse(0, 0, R * 1.35, R * 0.12, 0, 0, Math.PI * 2);
-  ctx.lineWidth = R * 0.06;
-  const iscoGrad = ctx.createLinearGradient(-R * 1.5, 0, R * 1.5, 0);
-  iscoGrad.addColorStop(0, "rgba(200, 220, 255, 0.5)");
-  iscoGrad.addColorStop(0.25, "rgba(255, 250, 235, 0.85)");
-  iscoGrad.addColorStop(0.5, "rgba(255, 255, 250, 0.95)");
-  iscoGrad.addColorStop(0.75, "rgba(255, 230, 170, 0.8)");
-  iscoGrad.addColorStop(1, "rgba(255, 170, 60, 0.4)");
-  ctx.strokeStyle = iscoGrad;
-  if (useShadow) {
-    ctx.shadowColor = "rgba(255, 255, 240, 0.8)";
-    ctx.shadowBlur = R * 0.2;
-  }
+  ctx.ellipse(0, 0, R * 1.44, R * 0.115, 0, 0, Math.PI * 2);
+  ctx.lineWidth = R * 0.062;
+  const isco = ctx.createLinearGradient(-R * 1.5, 0, R * 1.5, 0);
+  isco.addColorStop(0,   "rgba(192, 218, 255, 0.55)");
+  isco.addColorStop(0.2, "rgba(255, 252, 238, 0.92)");
+  isco.addColorStop(0.5, "rgba(255, 255, 252, 1.0)");
+  isco.addColorStop(0.8, "rgba(255, 228, 168, 0.84)");
+  isco.addColorStop(1,   "rgba(255, 164, 55,  0.38)");
+  ctx.strokeStyle = isco;
+  if (useShadow) { ctx.shadowColor = "rgba(255, 255, 242, 0.90)"; ctx.shadowBlur = R * 0.20; }
   ctx.stroke();
   ctx.shadowBlur = 0;
   ctx.restore();
 
-  // ── 9. Hot-spot shimmer (skipped on low quality) ────────────────────
+  // ── 9. Hot-spot shimmer (orbiting bright knot in disk) ────────────
   if (quality.bhShimmer) {
     ctx.save();
-    const shimmerAngle = t * 0.0008;
-    const shimX = Math.cos(shimmerAngle) * diskW * 0.6;
-    const shimY = Math.sin(shimmerAngle) * diskH * 0.3;
-    const shimmer = ctx.createRadialGradient(shimX, shimY, 0, shimX, shimY, R * 0.8);
-    shimmer.addColorStop(0, "rgba(255, 255, 230, 0.12)");
-    shimmer.addColorStop(0.5, "rgba(255, 200, 100, 0.04)");
-    shimmer.addColorStop(1, "rgba(0, 0, 0, 0)");
-    ctx.fillStyle = shimmer;
+    ctx.rotate(tilt);
+    const sA = t * 0.0009;
+    const sX = Math.cos(sA) * diskW * 0.56;
+    const sY = Math.sin(sA) * diskH * 0.55;
+    const sG = ctx.createRadialGradient(sX, sY, 0, sX, sY, R * 0.72);
+    sG.addColorStop(0,    "rgba(255, 255, 235, 0.22)");
+    sG.addColorStop(0.44, "rgba(255, 208, 108, 0.07)");
+    sG.addColorStop(1,    "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = sG;
     ctx.beginPath();
-    ctx.arc(shimX, shimY, R * 0.8, 0, Math.PI * 2);
+    ctx.ellipse(sX, sY, R * 0.72, R * 0.72 * (diskH / diskW) * 2.2, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
