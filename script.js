@@ -17,8 +17,8 @@ const exploreExitBtn = document.getElementById("explore-exit");
 
 const sections = window.PORTFOLIO.sections;
 const projects = window.PORTFOLIO.projects;
-const keys = ["skills", "leadership", "projects", "contact"];
-const colors = ["#8FAEFF", "#D1D5DB", "#BFC7D5", "#8F1D2C"];
+const keys = ["skills", "leadership", "projects", "contact", "journey"];
+const colors = ["#8FAEFF", "#D1D5DB", "#BFC7D5", "#8F1D2C", "#6FE0E8"];
 
 let width = 0;
 let height = 0;
@@ -97,9 +97,9 @@ function applyQualityTier() {
     quality.bhShimmer = false;
     quality.nodeGlow = true;
   } else {
-    quality.sparkCount = 70;
-    quality.astronautCount = 3;
-    quality.bhLayers = 3;
+    quality.sparkCount = 48;
+    quality.astronautCount = 2;
+    quality.bhLayers = 2;
     quality.bhShadows = true;
     quality.bhShimmer = true;
     quality.nodeGlow = true;
@@ -120,11 +120,12 @@ function checkFpsAndDowngrade() {
 }
 
 const clusterLayout = {
-  skills:     { x: 0.55, y: 0.22, r: 110 },
-  leadership: { x: 0.75, y: 0.45, r: 105 },
-  projects:   { x: 0.60, y: 0.80, r: 115 },
-  contact:    { x: 0.45, y: 0.55, r: 95 },
-  secret:     { x: 0.35, y: 0.25, r: 35 }
+  journey:    { x: 0.40, y: 0.20, r: 102 },
+  skills:     { x: 0.60, y: 0.16, r: 108 },
+  leadership: { x: 0.80, y: 0.46, r: 104 },
+  projects:   { x: 0.62, y: 0.80, r: 112 },
+  contact:    { x: 0.42, y: 0.72, r: 96 },
+  secret:     { x: 0.88, y: 0.84, r: 34 }
 };
 
 function getBezierPoint(t, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
@@ -163,7 +164,7 @@ function buildNetwork() {
   sparks = [];
   keys.forEach((key, clusterIndex) => {
     const cluster = clusterLayout[key];
-    const count = 14;
+    const count = 10;
     const cx = cluster.x * width;
     const cy = cluster.y * height;
 
@@ -267,8 +268,8 @@ function makeNode(options) {
 
 function labelFor(key) {
   const labels = {
-    en: { skills: "Skills", leadership: "Leadership", projects: "Projects", contact: "Contact" },
-    pt: { skills: "Skills", leadership: "Liderança", projects: "Projetos", contact: "Contato" }
+    en: { skills: "Skills", leadership: "Leadership", projects: "Projects", contact: "Contact", journey: "Journey" },
+    pt: { skills: "Skills", leadership: "Liderança", projects: "Projetos", contact: "Contato", journey: "Trajetória" }
   };
   return labels[currentLang][key];
 }
@@ -339,6 +340,29 @@ function renderPanel(key) {
   let html = `<h2 class="panel-title">${t(data.title)}</h2>`;
   html += `<p class="panel-text">${t(data.text)}</p>`;
 
+  // ── Journey: spaceship timeline ────────────────────────────────────────────
+  if (data.timeline) {
+    const trip = (data.timeline.length - 1) * 0.9 + 1.8; // ship travel duration
+    html += `
+      <div class="timeline" style="--tl-trip:${trip}s">
+        <div class="timeline__rail">
+          <span class="timeline__progress"></span>
+          <span class="timeline__ship"><i class="fa-solid fa-rocket"></i><span class="timeline__flame"></span></span>
+        </div>
+        <div class="timeline__events">
+          ${data.timeline.map((ev, i) => `
+            <div class="tl-event stagger-item" style="animation-delay:${260 + i * 220}ms">
+              <div class="tl-node"><i class="${ev.icon}"></i><span class="tl-node__ring"></span></div>
+              <div class="tl-card">
+                <span class="tl-date">${t(ev.date)}</span>
+                <strong>${t(ev.title)}</strong>
+                <p>${t(ev.desc)}</p>
+              </div>
+            </div>`).join("")}
+        </div>
+      </div>`;
+  }
+
   // ── Leadership: community card ───────────────────────────────────────────
   if (key === "leadership") {
     const membersLabel = currentLang === "pt" ? "membros" : "members";
@@ -349,13 +373,13 @@ function renderPanel(key) {
     html += `
       <div class="community-card stagger-item" style="animation-delay: 100ms">
         <div class="community-img">
-          <img src="community.png" alt="Programadores community">
+          <img src="community.png" alt="Servidor dos Programadores community">
         </div>
         <div class="community-info">
           <div class="community-badge">20k+ ${membersLabel}</div>
-          <h3>Programadores</h3>
+          <h3>Servidor dos Programadores</h3>
           <p>${communityDesc}</p>
-          <a href="https://discord.gg/programadores" target="_blank" rel="noopener" class="community-invite">
+          <a href="https://discord.gg/programador" target="_blank" rel="noopener" class="community-invite">
             <i class="fa-brands fa-discord"></i> ${inviteLabel}
           </a>
         </div>
@@ -367,51 +391,51 @@ function renderPanel(key) {
     const baseDelay = key === "leadership" ? 160 : 100;
     html += `<div class="${listClass}">${data.groups.map(([title, desc], index) => {
       const titleText = t(title);
-      
+
       let iconHtml = "";
       if (key === "skills") {
         const englishName = typeof title === 'object' ? title.en : title;
         const matchingIcon = skillIconsList.find(s => s.name === englishName);
         if (matchingIcon) {
-          iconHtml = matchingIcon.url 
-            ? `<div class="orbital-icon"><img src="${matchingIcon.url}" alt="${matchingIcon.name}" loading="lazy"></div>`
-            : `<div class="orbital-icon fa-icon"><i class="${matchingIcon.fa}"></i></div>`;
+          iconHtml = matchingIcon.url
+            ? `<span class="row-ico"><img src="${matchingIcon.url}" alt="${matchingIcon.name}" loading="lazy"></span>`
+            : `<span class="row-ico fa"><i class="${matchingIcon.fa}"></i></span>`;
         }
       } else if (key === "leadership") {
         if (titleText.toLowerCase().includes(currentLang === "pt" ? "arquitetura" : "architecture")) {
-           iconHtml = `<div class="orbital-icon fa-icon"><i class="fa-solid fa-sitemap"></i></div>`;
+           iconHtml = `<span class="row-ico fa"><i class="fa-solid fa-sitemap"></i></span>`;
         } else if (titleText.toLowerCase().includes(currentLang === "pt" ? "mentoria" : "mentorship")) {
-           iconHtml = `<div class="orbital-icon fa-icon"><i class="fa-solid fa-users-rays"></i></div>`;
+           iconHtml = `<span class="row-ico fa"><i class="fa-solid fa-users-rays"></i></span>`;
         } else if (titleText.toLowerCase().includes(currentLang === "pt" ? "parcerias" : "partnerships")) {
-           iconHtml = `<div class="orbital-icon fa-icon"><i class="fa-solid fa-handshake"></i></div>`;
+           iconHtml = `<span class="row-ico fa"><i class="fa-solid fa-handshake"></i></span>`;
         }
       }
 
       const isPartnerships = key === "leadership" && titleText.toLowerCase().includes(currentLang === "pt" ? "parcerias" : "partnerships");
       const partners = isPartnerships && data.links
-        ? `<div class="partner-cards">${data.links.map(([label, href, subtitle]) =>
-            `<a class="partner-card-item" href="${href}" target="_blank" rel="noopener">
-              <div class="partner-card-info"><strong>${label}</strong><span class="lang-badge" data-i18n="lang_pt"><small data-i18n="lang_pt_level"></small></span>
-        <span class="lang-badge" data-i18n="lang_en"><small data-i18n="lang_en_level"></small></span>
-        <span class="lang-badge" data-i18n="lang_es"><small data-i18n="lang_es_level"></small></span>${t(subtitle)}</span></div>
-              <div class="partner-card-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
-            </a>`
+        ? `<div class="partner-row">${data.links.map(([label, href, subtitle]) =>
+            `<a class="partner" href="${href}" target="_blank" rel="noopener"><span class="partner-name">${label}</span><span class="partner-sub">${t(subtitle)}</span><i class="fa-solid fa-arrow-up-right"></i></a>`
           ).join("")}</div>`
         : "";
-      return `<div class="orbital-item stagger-item ${iconHtml ? 'has-icon' : ''}" style="animation-delay: ${baseDelay + index * 50}ms">${iconHtml}<div class="orbital-item-content"><strong>${titleText}</strong><span>${t(desc)}</span>${partners}</div></div>`;
+
+      const idx = String(index + 1).padStart(2, "0");
+      return `<div class="orbital-item stagger-item" style="animation-delay: ${baseDelay + index * 50}ms"><span class="row-idx">${idx}</span>${iconHtml}<div class="orbital-item-content"><strong>${titleText}</strong><span>${t(desc)}</span>${partners}</div></div>`;
     }).join("")}</div>`;
   }
 
   if (data.projects) {
+    const viewLabel = currentLang === "pt" ? "Ver detalhes" : "View details";
     html += `<div class="project-flow">${data.projects.map((projectKey, index) => {
       const project = projects[projectKey];
-      return `<button class="project-card stagger-item" style="animation-delay: ${100 + index * 50}ms" data-project="${projectKey}"><i class="${project.icon}"></i><strong>${t(project.title)}</strong><span>${project.tech.join(" / ")}</span><p>${t(project.desc)}</p><small>${t(project.impact)}</small></button>`;
+      const idx = String(index + 1).padStart(2, "0");
+      const tags = project.tech.map(x => `<span>${x}</span>`).join("");
+      return `<button class="project-card stagger-item" style="animation-delay: ${100 + index * 50}ms" data-project="${projectKey}"><span class="work-idx">${idx}</span><i class="work-ico ${project.icon}"></i><strong>${t(project.title)}</strong><p class="work-tagline">${t(project.tagline || project.desc)}</p><div class="work-tags">${tags}</div><span class="work-more">${viewLabel} <i class="fa-solid fa-arrow-right"></i></span></button>`;
     }).join("")}</div>`;
   }
 
   if (data.links && key === "contact") {
     html += `<div class="contact-flow">${data.links.map(([label, value, href, icon], index) =>
-      `<a class="contact-link stagger-item" style="animation-delay: ${100 + index * 50}ms" href="${href}" target="_blank" rel="noopener"><div class="contact-icon-wrapper"><i class="${icon}"></i></div><div class="contact-info"><span>${t(label)}:</span><strong>${value}</strong></div></a>`
+      `<a class="contact-link stagger-item" style="animation-delay: ${100 + index * 50}ms" href="${href}" target="_blank" rel="noopener"><span class="contact-icon-wrapper"><i class="${icon}"></i></span><span class="contact-info"><span>${t(label)}</span><strong>${value}</strong></span><i class="contact-arrow fa-solid fa-arrow-up-right"></i></a>`
     ).join("")}</div>`;
   }
 
@@ -543,8 +567,10 @@ function drawNetwork() {
     ctx.translate(-pivotX, -pivotY);
   }
 
-  // Draw the Black Hole in the center background
-  drawBlackHole(width * 0.85, height * 0.15, time);
+  // Draw the Black Hole in the center background.
+  // Skipped while a section panel is open — the panel covers that corner,
+  // so we save its (heavy) render cost while the user is reading content.
+  if (!activeSection) drawBlackHole(width * 0.85, height * 0.15, time);
   
   // Draw floating astronauts
   drawAstronauts();

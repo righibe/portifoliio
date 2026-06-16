@@ -34,6 +34,7 @@
       </div>
     </div>
     <nav class="nav" aria-label="Portfolio sections">
+      <button class="nav__item" data-section="journey">Journey</button>
       <button class="nav__item" data-section="skills">Skills</button>
       <button class="nav__item" data-section="leadership">Leadership</button>
       <button class="nav__item" data-section="projects">Projects</button>
@@ -130,6 +131,43 @@
   <script>
     window.PORTFOLIO = {
       sections: {
+        journey: {
+          kicker: { en: "Flight log", pt: "Diário de bordo" },
+          title: { en: "The journey so far.", pt: "A trajetória até aqui." },
+          text: {
+            en: "A short flight log of the milestones that shaped me as a developer.",
+            pt: "Um breve diário de bordo dos marcos que me formaram como desenvolvedor."
+          },
+          timeline: [
+            {
+              date: { en: "May 2023", pt: "Maio de 2023" },
+              icon: "fa-brands fa-discord",
+              title: { en: "Co-founded Servidor dos Programadores", pt: "Cofundei o Servidor dos Programadores" },
+              desc: {
+                en: "Launched one of Brazil's largest developer communities on Discord together with a friend.",
+                pt: "Criei, junto com um amigo, uma das maiores comunidades de devs do Brasil no Discord."
+              }
+            },
+            {
+              date: { en: "December 2023", pt: "Dezembro de 2023" },
+              icon: "fa-solid fa-code",
+              title: { en: "Started programming", pt: "Comecei a programar" },
+              desc: {
+                en: "Wrote my first lines of code and fell for building things — the beginning of everything.",
+                pt: "Escrevi minhas primeiras linhas de código e me apaixonei por construir coisas — o começo de tudo."
+              }
+            },
+            {
+              date: { en: "March 2026", pt: "Março de 2026" },
+              icon: "fa-solid fa-graduation-cap",
+              title: { en: "Computer Science at Unisinos", pt: "Ciência da Computação na Unisinos" },
+              desc: {
+                en: "Started my Computer Science degree at Unisinos, turning curiosity into formal engineering.",
+                pt: "Iniciei a graduação em Ciência da Computação na Unisinos, transformando curiosidade em engenharia."
+              }
+            }
+          ]
+        },
         skills: {
           kicker: { en: "Capability cluster", pt: "Cluster de habilidades" },
           title: { en: "Back-end stack, automation and AI tooling.", pt: "Stack back-end, automação e ferramentas de IA." },
@@ -194,6 +232,7 @@
         predictprices: {
           icon: "fa-solid fa-chart-line",
           title: { en: "SP Real Estate Price Predictor", pt: "Predição de Preços de Imóveis SP" },
+          tagline: { en: "ML model that estimates São Paulo property prices from real listing features.", pt: "Modelo de ML que estima preços de imóveis em São Paulo a partir de dados reais." },
           desc: { en: "Machine Learning application that predicts house and apartment prices in São Paulo. Uses property features like area, rooms, bathrooms, parking spots, property tax (IPTU) and condo fees to estimate sale value. Trains multiple Decision Tree models with varying depths and evaluates each using Mean Absolute Error (MAE) to select the best configuration.", pt: "Aplicação de Machine Learning que prevê preços de casas e apartamentos em São Paulo. Utiliza características do imóvel como área útil, quartos, banheiros, vagas de garagem, IPTU e taxa de condomínio para estimar o valor de venda. Treina múltiplos modelos de Árvore de Decisão com diferentes profundidades e avalia cada um usando Erro Médio Absoluto (MAE) para selecionar a melhor configuração." },
           impact: { en: "Demonstrates end-to-end ML pipeline: data cleaning, feature engineering, model training, hyperparameter tuning and evaluation on a real-world dataset.", pt: "Demonstra pipeline completo de ML: limpeza de dados, engenharia de features, treinamento de modelos, ajuste de hiperparâmetros e avaliação em dataset real." },
           tech: ["Python", "Machine Learning", "Decision Trees", "Pandas"],
@@ -202,6 +241,7 @@
         supportagent: {
           icon: "fa-solid fa-headset",
           title: { en: "AI Technical Support Agent", pt: "Agente de Suporte Técnico com IA" },
+          tagline: { en: "GPT-4o agent that resolves user issues via tool-calling and conversation memory.", pt: "Agente GPT-4o que resolve problemas com tool-calling e memória de conversa." },
           desc: { en: "Intelligent technical support agent powered by GPT-4o that handles user issues through natural conversation. Features tool-calling capabilities, context-aware responses based on conversation history, and structured problem-solving workflows. Designed to simulate a real support experience with memory and actionable suggestions.", pt: "Agente inteligente de suporte técnico com GPT-4o que resolve problemas do usuário através de conversa natural. Possui capacidade de chamada de ferramentas (tool calling), respostas contextuais baseadas no histórico da conversa e fluxos estruturados de resolução de problemas. Projetado para simular uma experiência real de suporte com memória e sugestões acionáveis." },
           impact: { en: "Shows practical use of LLM agents with tool integration, conversation memory and structured output for enterprise-grade support automation.", pt: "Demonstra uso prático de agentes LLM com integração de ferramentas, memória de conversa e saída estruturada para automação de suporte corporativo." },
           tech: ["Python", "GPT-4o", "LangChain", "AI Agents"],
@@ -210,6 +250,7 @@
         cicd: {
           icon: "fa-brands fa-github",
           title: "CI/CD Pipeline in Python",
+          tagline: { en: "GitHub Actions pipeline automating lint, tests and the deploy flow of a Python app.", pt: "Pipeline com GitHub Actions automatizando lint, testes e deploy de uma app Python." },
           desc: { en: "Automated GitHub Actions pipeline for linting, tests and deployment flow in a Python application.", pt: "Pipeline automatizado com GitHub Actions para linting, testes e fluxo de deploy em uma aplicação Python." },
           impact: { en: "Makes validation repeatable and catches issues before release.", pt: "Torna a validação repetível e encontra problemas antes da entrega." },
           tech: ["Python", "GitHub Actions", "CI/CD"],
@@ -218,6 +259,7 @@
         aibot: {
           icon: "fa-brands fa-discord",
           title: "Generative AI Discord Bot",
+          tagline: { en: "Discord bot wired to generative AI APIs for contextual answers in real time.", pt: "Bot de Discord ligado a APIs de IA generativa para respostas contextuais em tempo real." },
           desc: { en: "Discord bot connected to generative AI APIs for contextual real-time answers.", pt: "Bot de Discord conectado a APIs de IA generativa para respostas contextuais em tempo real." },
           impact: { en: "Adds AI support directly inside a community server.", pt: "Leva suporte com IA direto para dentro de uma comunidade." },
           tech: ["Python", "Discord.py", "LLMs"],
@@ -226,6 +268,7 @@
         questbot: {
           icon: "fa-solid fa-comments",
           title: "Questionnaire Bot",
+          tagline: { en: "Interactive bot running multi-step surveys with structured, persistent answers.", pt: "Bot interativo que conduz questionários em etapas com respostas estruturadas e persistentes." },
           desc: { en: "Interactive bot for multi-step surveys, structured answers and persistent collection.", pt: "Bot interativo para questionários em etapas, respostas estruturadas e coleta persistente." },
           impact: { en: "Useful for onboarding, feedback and conversational forms.", pt: "Útil para onboarding, feedback e formulários conversacionais." },
           tech: ["Python", "Automation", "Forms"],
@@ -234,6 +277,7 @@
         cadastro: {
           icon: "fa-brands fa-java",
           title: "User Management System",
+          tagline: { en: "Java CRUD app built with object-oriented principles for user management.", pt: "App CRUD em Java com princípios de orientação a objetos para gestão de usuários." },
           desc: { en: "Java CRUD application built with OOP principles for user registration and management.", pt: "Aplicação CRUD em Java com princípios de OOP para cadastro e gestão de usuários." },
           impact: { en: "Shows clean entities, validation and CRUD behavior.", pt: "Mostra entidades, validação e comportamento CRUD de forma limpa." },
           tech: ["Java", "OOP", "CRUD"],
@@ -242,6 +286,7 @@
         django: {
           icon: "fa-brands fa-python",
           title: "Django User Management",
+          tagline: { en: "Full user CRUD on the Django ORM with clean routing and organized structure.", pt: "CRUD completo de usuários no Django ORM com rotas limpas e estrutura organizada." },
           desc: { en: "Full CRUD user management using Django ORM, routing and clean application structure.", pt: "CRUD completo de usuários usando Django ORM, rotas e estrutura organizada." },
           impact: { en: "Connects Python back-end skills with database-driven web apps.", pt: "Conecta back-end em Python com aplicações web orientadas a banco de dados." },
           tech: ["Python", "Django", "ORM"],
