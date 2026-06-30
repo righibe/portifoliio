@@ -1479,20 +1479,30 @@ body.content-open .hint {
   }
 }
 
-/* ─── Journey timeline (spaceship) ───────────────────────────────────────── */
+/* ─── Journey timeline (spaceship · horizontal) ──────────────────────────── */
 .timeline {
   position: relative;
   margin-top: 34px;
-  padding-left: 4px;
+  padding: 0 2px 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(111, 224, 232, 0.35) transparent;
+}
+
+.timeline::-webkit-scrollbar { height: 6px; }
+.timeline::-webkit-scrollbar-thumb {
+  background: rgba(111, 224, 232, 0.3);
+  border-radius: 4px;
 }
 
 /* The flight rail the ship travels along */
 .timeline__rail {
   position: absolute;
-  left: 21px;
-  top: 8px;
-  bottom: 18px;
-  width: 2px;
+  top: 21px;
+  left: 24px;
+  right: 24px;
+  height: 2px;
   background: rgba(143, 180, 255, 0.14);
   border-radius: 2px;
   overflow: visible;
@@ -1506,19 +1516,19 @@ body.content-open .hint {
   width: 100%;
   height: 100%;
   border-radius: 2px;
-  background: linear-gradient(180deg, var(--cyan), rgba(111, 224, 232, 0.55) 60%, rgba(143, 180, 255, 0));
+  background: linear-gradient(90deg, var(--cyan), rgba(111, 224, 232, 0.55) 60%, rgba(143, 180, 255, 0));
   box-shadow: 0 0 12px rgba(111, 224, 232, 0.55);
-  transform: scaleY(0);
-  transform-origin: top;
+  transform: scaleX(0);
+  transform-origin: left;
   animation: tlFill var(--tl-trip, 2.4s) var(--ease) 0.25s forwards;
 }
 
 /* The travelling ship */
 .timeline__ship {
   position: absolute;
-  left: 1px;
-  top: 0;
-  transform: translate(-50%, -50%) rotate(135deg);
+  top: 1px;
+  left: 0;
+  transform: translate(-50%, -50%) rotate(45deg);
   color: #f5f7fb;
   font-size: 0.92rem;
   filter: drop-shadow(0 0 8px rgba(111, 224, 232, 0.9));
@@ -1527,32 +1537,38 @@ body.content-open .hint {
 
 .timeline__flame {
   position: absolute;
-  top: -9px;
-  left: 50%;
-  width: 5px;
-  height: 12px;
-  transform: translateX(-50%);
+  top: 50%;
+  left: -9px;
+  width: 12px;
+  height: 5px;
+  transform: translateY(-50%);
   border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
-  background: linear-gradient(180deg, rgba(111, 224, 232, 0.95), rgba(143, 180, 255, 0));
+  background: linear-gradient(270deg, rgba(111, 224, 232, 0.95), rgba(143, 180, 255, 0));
   filter: blur(1px);
   animation: tlFlame 0.18s ease-in-out infinite alternate;
 }
 
-@keyframes tlShip { from { top: 0; } to { top: 100%; } }
-@keyframes tlFill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-@keyframes tlFlame { from { opacity: 0.5; height: 9px; } to { opacity: 1; height: 14px; } }
+@keyframes tlShip { from { left: 0; } to { left: 100%; } }
+@keyframes tlFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes tlFlame { from { opacity: 0.5; width: 9px; } to { opacity: 1; width: 14px; } }
 
 .timeline__events {
   display: flex;
-  flex-direction: column;
-  gap: 26px;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 22px;
+  padding-top: 0;
 }
 
 .tl-event {
   position: relative;
   display: flex;
-  align-items: flex-start;
-  gap: 18px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1 1 0;
+  min-width: 170px;
+  gap: 16px;
 }
 
 .tl-node {
@@ -1587,14 +1603,13 @@ body.content-open .hint {
 }
 
 .tl-card {
-  flex: 1;
   min-width: 0;
-  padding: 4px 0 6px;
+  padding: 0 4px;
 }
 
 .tl-date {
   display: inline-block;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   font-family: var(--mono);
   font-size: 0.7rem;
   letter-spacing: 0.04em;
@@ -1604,8 +1619,8 @@ body.content-open .hint {
 
 .tl-card strong {
   display: block;
-  margin-bottom: 5px;
-  font-size: 1.04rem;
+  margin-bottom: 6px;
+  font-size: 0.98rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: #f5f7fb;
@@ -1614,12 +1629,12 @@ body.content-open .hint {
 .tl-card p {
   margin: 0;
   color: var(--soft);
-  font-size: 0.88rem;
-  line-height: 1.55;
-  max-width: 560px;
+  font-size: 0.84rem;
+  line-height: 1.5;
 }
 
 @media (max-width: 620px) {
-  .tl-card strong { font-size: 0.98rem; }
-  .tl-event { gap: 14px; }
+  .tl-event { min-width: 150px; }
+  .tl-card strong { font-size: 0.94rem; }
+  .tl-card p { font-size: 0.8rem; }
 }
