@@ -41,10 +41,10 @@
 html,
 body {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   margin: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
@@ -116,7 +116,7 @@ button {
 .signal-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+gap: 10px;
   pointer-events: auto;
 }
 
@@ -330,48 +330,6 @@ button {
   font-size: 0.7rem;
   margin-top: 2px;
   text-shadow: none;
-}
-
-/* ─── Download CV button ─────────────────────────────────────────────────── */
-.cv-download {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 20px;
-  padding: 0;
-  font-family: var(--mono);
-  font-size: 0.8rem;
-  font-weight: 400;
-  color: rgba(234, 241, 255, 0.6);
-  text-decoration: none;
-  border: none;
-  background: none;
-  box-shadow: none;
-  transition: color 0.25s var(--ease);
-  cursor: pointer;
-}
-
-.cv-download i {
-  font-size: 0.85rem;
-  color: rgba(143, 180, 255, 0.7);
-  transition: color 0.25s var(--ease);
-}
-
-.cv-download span {
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.25s var(--ease);
-}
-
-.cv-download:hover {
-  color: #eaf1ff;
-}
-
-.cv-download:hover i {
-  color: var(--cyan);
-}
-
-.cv-download:hover span {
-  border-bottom-color: rgba(143, 180, 255, 0.5);
 }
 
 /* ─── Landing page stats ─────────────────────────────────────────────────── */

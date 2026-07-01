@@ -1126,9 +1126,6 @@ langItems.forEach(item => {
     const statCommunity = document.querySelector('[data-i18n="statCommunity"]');
     if (statCommunity) statCommunity.textContent = currentLang === "pt" ? "comunidade dev no Brasil" : "Brazil dev community";
 
-    const downloadCv = document.querySelector('[data-i18n="downloadCv"] span');
-    if (downloadCv) downloadCv.textContent = currentLang === "pt" ? "Baixar currículo" : "Download CV";
-
     const hint = document.querySelector('[data-i18n="hint"]');
     if (hint) hint.textContent = currentLang === "pt" ? "Clique em um cluster neural ou use a navegação" : "Click a neural cluster or use the top navigation";
     const backHome = document.querySelector('[data-i18n="backHome"]');
