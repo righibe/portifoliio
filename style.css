@@ -332,6 +332,36 @@ gap: 10px;
   text-shadow: none;
 }
 
+/* ─── Download CV button ─────────────────────────────────────────────────── */
+.cv-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(143, 180, 255, 0.28);
+  background: rgba(30, 58, 138, 0.22);
+  color: rgba(245, 247, 251, 0.82);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  transition: color 200ms var(--ease), border-color 200ms var(--ease), background 200ms var(--ease), transform 200ms var(--ease);
+}
+
+.cv-download i {
+  font-size: 0.82rem;
+  color: var(--cyan);
+}
+
+.cv-download:hover {
+  color: #fff;
+  border-color: rgba(143, 180, 255, 0.55);
+  background: rgba(30, 58, 138, 0.4);
+  transform: translateY(-1px);
+}
+
 /* ─── Landing page stats ─────────────────────────────────────────────────── */
 .identity__stats {
   display: flex;
