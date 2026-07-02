@@ -136,6 +136,144 @@ function getBezierPoint(t, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
   return { x, y };
 }
 
+// ─── Fit-to-viewport layout engine ──────────────────────────────────────
+// Measures the real rendered size of the hero and section panels and applies
+// the exact scale needed so everything is fully visible at ANY resolution,
+// with zero page scrolling. Replaces the old hard-coded breakpoint scales.
+const topbarEl = document.querySelector(".topbar");
+const identityEl = document.querySelector(".identity");
+const experienceEl = document.getElementById("experience");
+const hintEl = document.getElementById("hint");
+const modalBoxEl = document.querySelector(".modal");
+const rootStyle = document.documentElement.style;
+const PANEL_MIN_SCALE = 0.42;
+const MODAL_MIN_SCALE = 0.55;
+let lastIdentityScale = 1;
+let lastPanelScale = 1;
+let panelScaleFloored = false;
+let modalScaleFloored = false;
+
+function identityScaleFor() {
+  // offsetWidth/offsetHeight ignore transforms → true layout size
+  const cs = getComputedStyle(experienceEl);
+  const availH = experienceEl.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  const availW = experienceEl.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const naturalH = identityEl.offsetHeight;
+  const naturalW = Math.max(identityEl.offsetWidth, identityEl.scrollWidth);
+  if (naturalH <= 0 || naturalW <= 0 || availH <= 0 || availW <= 0) return 1;
+  return Math.min(1, availH / naturalH, availW / naturalW);
+}
+
+function fitIdentity() {
+  if (!topbarEl || !identityEl || !experienceEl) return;
+  rootStyle.setProperty("--topbar-h", topbarEl.offsetHeight + "px");
+  let hintSpace = 16;
+  if (hintEl) {
+    const hintBottom = parseFloat(getComputedStyle(hintEl).bottom) || 0;
+    hintSpace = hintEl.offsetHeight + hintBottom + 10;
+  }
+  rootStyle.setProperty("--hint-space", Math.ceil(hintSpace) + "px");
+
+  document.body.classList.remove("compact-identity");
+  let scale = identityScaleFor();
+  if (scale < 0.58) {
+    // The terminal is decorative — drop it before the hero text gets too small
+    document.body.classList.add("compact-identity");
+    scale = identityScaleFor();
+  }
+  lastIdentityScale = Math.min(1, scale);
+  rootStyle.setProperty("--identity-scale", lastIdentityScale.toFixed(4));
+}
+
+// Scales a content block down (with width compensation so the visual width
+// stays 100%) until it fits inside availH. Returns the applied scale.
+// Widening reflows the content shorter, so "fits at scale s" is monotonic in
+// s — binary-search the largest scale that still fits.
+function fitContentBox(el, availH, minScale) {
+  el.style.transform = "";
+  el.style.transformOrigin = "";
+  el.style.width = "";
+  el.style.height = "";
+  // Small safety margin: collapsed child margins can leak past scrollHeight
+  availH -= 5;
+  if (availH <= 0) return 1;
+
+  const fitsAt = scale => {
+    el.style.width = scale < 0.999 ? (100 / scale).toFixed(4) + "%" : "";
+    return el.scrollHeight * scale <= availH + 1;
+  };
+
+  if (fitsAt(1)) {
+    el.style.width = "";
+    return 1;
+  }
+
+  let lo = minScale;
+  let hi = 1;
+  let best = null;
+  for (let i = 0; i < 7; i++) {
+    const mid = (lo + hi) / 2;
+    if (fitsAt(mid)) {
+      best = mid;
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+  const scale = best === null ? minScale : best;
+  fitsAt(scale); // re-apply the chosen width
+  const naturalH = el.scrollHeight;
+  el.style.transformOrigin = "top left";
+  el.style.transform = `scale(${scale.toFixed(4)})`;
+  // Transforms don't shrink the layout box — clamp it so the scroll area
+  // matches what is actually visible.
+  el.style.height = Math.ceil(naturalH * scale) + "px";
+  return scale;
+}
+
+function fitPanel() {
+  if (!panel || !panelContent) return;
+  panelScaleFloored = false;
+  lastPanelScale = 1;
+  // Reset any previous fit BEFORE measuring — the panel hugs its content, so
+  // a stale scaled height would feed back into the available-height math.
+  panelContent.style.transform = "";
+  panelContent.style.transformOrigin = "";
+  panelContent.style.width = "";
+  panelContent.style.height = "";
+  if (!activeSection) return;
+  panel.scrollTop = 0;
+  // The panel hugs its content, so measure the space it COULD occupy by
+  // temporarily pinning its bottom edge.
+  panel.style.bottom = "var(--panel-gap)";
+  const cs = getComputedStyle(panel);
+  const availH = panel.clientHeight - panelContent.offsetTop - parseFloat(cs.paddingBottom);
+  panel.style.bottom = "";
+  lastPanelScale = fitContentBox(panelContent, availH, PANEL_MIN_SCALE);
+  panelScaleFloored = lastPanelScale <= PANEL_MIN_SCALE && panelContent.scrollHeight > availH + 1;
+}
+
+function fitModal() {
+  if (!modalBoxEl || !modalContent) return;
+  modalScaleFloored = false;
+  modalContent.style.transform = "";
+  modalContent.style.width = "";
+  modalContent.style.height = "";
+  if (!modal.classList.contains("open")) return;
+  modalBoxEl.scrollTop = 0;
+  if (modalBoxEl.scrollHeight <= modalBoxEl.clientHeight + 1) return;
+  const cs = getComputedStyle(modalBoxEl);
+  const availH = modalBoxEl.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  const applied = fitContentBox(modalContent, availH, MODAL_MIN_SCALE);
+  modalScaleFloored = applied <= MODAL_MIN_SCALE && modalContent.scrollHeight > availH + 1;
+}
+
+function refitLayout() {
+  fitIdentity();
+  fitPanel();
+  fitModal();
+}
+
 function resize() {
   const rawDpr = window.devicePixelRatio || 1;
   // Cap DPR: 1.5 for 4K, 2 for others — saves huge pixel budgets
@@ -156,6 +294,7 @@ function resize() {
   buildNetwork();
   ship.x = ship.tx = width * 0.5;
   ship.y = ship.ty = height * 0.58;
+  refitLayout();
 }
 
 function buildNetwork() {
@@ -443,6 +582,7 @@ function renderPanel(key) {
   panelContent.querySelectorAll("[data-project]").forEach(button => {
     button.addEventListener("click", () => openProject(button.dataset.project));
   });
+  fitPanel();
 }
 
 function openProject(key) {
@@ -460,6 +600,7 @@ function openProject(key) {
   `;
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
+  fitModal();
 }
 
 function closeProject() {
@@ -1143,6 +1284,7 @@ langItems.forEach(item => {
       }
     });
     if (activeSection) renderPanel(activeSection);
+    fitIdentity();
   });
 });
 
@@ -1163,6 +1305,7 @@ window.addEventListener("keydown", event => {
         exploreExitBtn.classList.remove("active");
         exploreExitBtn.setAttribute("aria-hidden", "true");
       }
+      if (!activeSection) document.body.classList.remove("content-open");
     }
   }
 });
@@ -1208,6 +1351,136 @@ window.addEventListener("resize", resize);
 resize();
 requestAnimationFrame(loop);
 
+// Text metrics change once webfonts/images arrive — re-measure the layout.
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(refitLayout);
+}
+window.addEventListener("load", refitLayout);
+
+// ─── URL params: deep-link sections/projects + layout debug ──────────────
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get("nofx") === "1") {
+  document.documentElement.classList.add("nofx");
+}
+{
+  const qsLang = urlParams.get("lang");
+  if (qsLang && qsLang !== currentLang) {
+    const langBtn = langItems.find(button => button.dataset.lang === qsLang);
+    if (langBtn) langBtn.click();
+  }
+  const qsSection = urlParams.get("section");
+  if (qsSection && sections[qsSection]) setActiveSection(qsSection);
+  const qsProject = urlParams.get("project");
+  if (qsProject && projects[qsProject]) window.setTimeout(() => openProject(qsProject), 300);
+}
+
+// ─── Layout audit (?debug=1) — asserts nothing is clipped or scrollable ──
+function auditIsRendered(el) {
+  if (!el || !el.getClientRects().length) return false;
+  let node = el;
+  while (node && node !== document.documentElement) {
+    if (parseFloat(getComputedStyle(node).opacity) < 0.05) return false;
+    node = node.parentElement;
+  }
+  return true;
+}
+
+function auditRect(issues, el, name, bounds) {
+  if (!auditIsRendered(el)) return;
+  const r = el.getBoundingClientRect();
+  const tol = 2.5;
+  if (r.left < bounds.left - tol || r.right > bounds.right + tol ||
+      r.top < bounds.top - tol || r.bottom > bounds.bottom + tol) {
+    issues.push(`${name} clipped [${Math.round(r.left)},${Math.round(r.top)} → ${Math.round(r.right)},${Math.round(r.bottom)}] outside [${Math.round(bounds.left)},${Math.round(bounds.top)} → ${Math.round(bounds.right)},${Math.round(bounds.bottom)}]`);
+  }
+}
+
+function runLayoutAudit() {
+  const issues = [];
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const viewport = { left: 0, top: 0, right: vw, bottom: vh };
+  const de = document.documentElement;
+
+  if (de.scrollWidth > vw + 1) issues.push(`page h-overflow ${de.scrollWidth}>${vw}`);
+  if (de.scrollHeight > vh + 1) issues.push(`page v-overflow ${de.scrollHeight}>${vh}`);
+  if (window.scrollX || window.scrollY) issues.push(`page scrolled ${window.scrollX},${window.scrollY}`);
+
+  auditRect(issues, document.querySelector(".signal"), "signal", viewport);
+  document.querySelectorAll(".signal-social").forEach((el, i) => auditRect(issues, el, `social#${i}`, viewport));
+  auditRect(issues, document.querySelector(".cv-download"), "cv-download", viewport);
+  auditRect(issues, document.querySelector(".lang-toggle"), "lang-toggle", viewport);
+  const navEl = document.querySelector(".nav");
+  if (navEl && navEl.scrollWidth > navEl.clientWidth + 2) {
+    issues.push(`nav items clipped ${navEl.scrollWidth}>${navEl.clientWidth}`);
+  }
+  document.querySelectorAll(".nav__item").forEach(el => auditRect(issues, el, `nav:${el.textContent}`, viewport));
+
+  const modalOpen = modal.classList.contains("open");
+  if (modalOpen) {
+    auditRect(issues, modalBoxEl, "modal", viewport);
+    if (!modalScaleFloored && modalBoxEl.scrollHeight > modalBoxEl.clientHeight + 2) {
+      issues.push(`modal overflows ${modalBoxEl.scrollHeight}>${modalBoxEl.clientHeight}`);
+    }
+  } else if (activeSection) {
+    auditRect(issues, panel, "panel", viewport);
+    if (!auditIsRendered(panelContent)) issues.push("panel content not rendered");
+    if (!panelScaleFloored && panel.scrollHeight > panel.clientHeight + 2) {
+      issues.push(`panel overflows ${panel.scrollHeight}>${panel.clientHeight} (scale=${lastPanelScale.toFixed(2)})`);
+    }
+    const timelineEl = panelContent.querySelector(".timeline");
+    if (timelineEl && timelineEl.scrollWidth > timelineEl.clientWidth + 2) {
+      issues.push(`timeline h-overflow ${timelineEl.scrollWidth}>${timelineEl.clientWidth}`);
+    }
+    if (!panelScaleFloored) {
+      // When the scale floor is hit the panel scrolls by design — element
+      // clipping below the fold is expected there, not a layout bug.
+      const panelBounds = panel.getBoundingClientRect();
+      panelContent.querySelectorAll(".project-card, .orbital-item, .contact-link, .tl-event, .community-card").forEach((el, i) => {
+        auditRect(issues, el, `${el.className.split(" ")[0]}#${i}`, panelBounds);
+      });
+    }
+  } else {
+    const identityInner = document.querySelector(".identity__inner") || identityEl;
+    if (!auditIsRendered(identityInner)) {
+      issues.push("identity not rendered");
+    } else {
+      const topbarBottom = topbarEl.getBoundingClientRect().bottom;
+      const hintTop = (hintEl && auditIsRendered(hintEl)) ? hintEl.getBoundingClientRect().top : vh;
+      const heroBounds = { left: 0, top: topbarBottom - 4, right: vw, bottom: hintTop + 4 };
+      [".identity__photo", ".identity__eyebrow", ".identity h1", ".identity__copy",
+       ".identity__stats", ".identity__languages", ".terminal"].forEach(sel => {
+        auditRect(issues, document.querySelector(sel), sel, heroBounds);
+      });
+      auditRect(issues, hintEl, "hint", viewport);
+    }
+  }
+
+  let banner = document.getElementById("layout-audit");
+  if (!banner) {
+    banner = document.createElement("div");
+    banner.id = "layout-audit";
+    document.body.appendChild(banner);
+  }
+  banner.style.cssText =
+    "position:fixed;left:0;bottom:0;z-index:99999;font:600 11px/1.35 Consolas,monospace;" +
+    "padding:4px 8px;max-width:70vw;pointer-events:none;white-space:pre-wrap;" +
+    (issues.length ? "background:rgba(127,29,29,.92);color:#fff" : "background:rgba(20,83,45,.88);color:#d1fae5");
+  const floorNote = (panelScaleFloored || modalScaleFloored) ? " FLOOR-SCROLL" : "";
+  banner.textContent = issues.length
+    ? `AUDIT FAIL ${vw}x${vh} idScale=${lastIdentityScale.toFixed(2)} panelScale=${lastPanelScale.toFixed(2)}${floorNote} (${issues.length})\n` + issues.join("\n")
+    : `AUDIT OK ${vw}x${vh} idScale=${lastIdentityScale.toFixed(2)} panelScale=${lastPanelScale.toFixed(2)}${floorNote}`;
+  window.__auditResult = { vw, vh, issues };
+  if (window.parent !== window) {
+    try { window.parent.postMessage("__audit:" + banner.textContent, "*"); } catch (e) { /* cross-origin */ }
+  }
+}
+
+if (urlParams.get("debug") === "1") {
+  window.setTimeout(runLayoutAudit, 2600);
+  window.addEventListener("resize", () => window.setTimeout(runLayoutAudit, 800));
+}
+
 // ─── Explore Mode Exit Button ────────────────────────────────────────────
 if (exploreExitBtn) {
   exploreExitBtn.addEventListener("click", () => {
@@ -1216,6 +1489,7 @@ if (exploreExitBtn) {
     exploreHud.setAttribute("aria-hidden", "true");
     exploreExitBtn.classList.remove("active");
     exploreExitBtn.setAttribute("aria-hidden", "true");
+    if (!activeSection) document.body.classList.remove("content-open");
   });
 }
 
