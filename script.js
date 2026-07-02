@@ -243,12 +243,8 @@ function fitPanel() {
   panelContent.style.height = "";
   if (!activeSection) return;
   panel.scrollTop = 0;
-  // The panel hugs its content, so measure the space it COULD occupy by
-  // temporarily pinning its bottom edge.
-  panel.style.bottom = "var(--panel-gap)";
   const cs = getComputedStyle(panel);
   const availH = panel.clientHeight - panelContent.offsetTop - parseFloat(cs.paddingBottom);
-  panel.style.bottom = "";
   lastPanelScale = fitContentBox(panelContent, availH, PANEL_MIN_SCALE);
   panelScaleFloored = lastPanelScale <= PANEL_MIN_SCALE && panelContent.scrollHeight > availH + 1;
 }
