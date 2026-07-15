@@ -1264,7 +1264,12 @@ langItems.forEach(item => {
     if (statCommunity) statCommunity.textContent = currentLang === "pt" ? "comunidade dev no Brasil" : "Brazil dev community";
 
     const downloadCv = document.querySelector('[data-i18n="downloadCv"]');
-    if (downloadCv) downloadCv.setAttribute("aria-label", currentLang === "pt" ? "Baixar currículo" : "Download CV");
+    if (downloadCv) {
+      const cvFile = currentLang === "pt" ? "bernardo-righi-curriculo.pdf" : "bernardo-righi-resume.pdf";
+      downloadCv.setAttribute("href", cvFile);
+      downloadCv.setAttribute("download", cvFile);
+      downloadCv.setAttribute("aria-label", currentLang === "pt" ? "Baixar currículo" : "Download CV");
+    }
 
     const hint = document.querySelector('[data-i18n="hint"]');
     if (hint) hint.textContent = currentLang === "pt" ? "Clique em um cluster neural ou use a navegação" : "Click a neural cluster or use the top navigation";
