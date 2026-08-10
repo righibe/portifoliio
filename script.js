@@ -568,6 +568,25 @@ function renderPanel(key) {
     }).join("")}</div>`;
   }
 
+  // ── Contact: profile card ─────────────────────────────────────────────────
+  if (key === "contact") {
+    const availableLabel = currentLang === "pt" ? "Disponível para projetos" : "Available for projects";
+    const roleLine = currentLang === "pt"
+      ? "Desenvolvedor back-end · Automação & IA"
+      : "Back-end developer · Automation & AI";
+    html += `
+      <div class="contact-card stagger-item" style="animation-delay: 80ms">
+        <div class="contact-card__photo">
+          <img src="avatar.png" alt="Bernardo Righi">
+        </div>
+        <div class="contact-card__info">
+          <div class="contact-card__badge">${availableLabel}</div>
+          <h3>Bernardo Righi</h3>
+          <p>${roleLine}</p>
+        </div>
+      </div>`;
+  }
+
   if (data.links && key === "contact") {
     html += `<div class="contact-flow">${data.links.map(([label, value, href, icon], index) =>
       `<a class="contact-link stagger-item" style="animation-delay: ${100 + index * 50}ms" href="${href}" target="_blank" rel="noopener"><span class="contact-icon-wrapper"><i class="${icon}"></i></span><span class="contact-info"><span>${t(label)}</span><strong>${value}</strong></span><i class="contact-arrow fa-solid fa-arrow-up-right"></i></a>`
@@ -1437,7 +1456,7 @@ function runLayoutAudit() {
       // When the scale floor is hit the panel scrolls by design — element
       // clipping below the fold is expected there, not a layout bug.
       const panelBounds = panel.getBoundingClientRect();
-      panelContent.querySelectorAll(".project-card, .orbital-item, .contact-link, .tl-event, .community-card").forEach((el, i) => {
+      panelContent.querySelectorAll(".project-card, .orbital-item, .contact-link, .tl-event, .community-card, .contact-card").forEach((el, i) => {
         auditRect(issues, el, `${el.className.split(" ")[0]}#${i}`, panelBounds);
       });
     }
