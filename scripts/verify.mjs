@@ -26,12 +26,16 @@ await page.click('[data-section="about"]');
 await page.waitForTimeout(1600);
 const aboutVisible = await page.evaluate(() => {
   const p = document.getElementById("section-panel");
-  return p.classList.contains("active") && !!p.querySelector(".player-card");
+  return p.classList.contains("active") && !!p.querySelector(".note-board");
 });
-console.log(aboutVisible ? "OK about panel + player card" : "FAIL about panel");
+console.log(aboutVisible ? "OK about panel + note board" : "FAIL about panel");
 const familyCard = await page.evaluate(() =>
-  document.querySelector(".about-card--family")?.textContent?.includes("Rodrigo")
+  document.querySelector(".note--family")?.textContent?.includes("Rodrigo")
 );
+const noPercent = await page.evaluate(() => !document.querySelector(".pstat, .player-card"));
+console.log(noPercent ? "OK no RPG percentages" : "FAIL RPG stats still present");
+const hasHeadband = await page.evaluate(() => !!document.querySelector(".note-band svg"));
+console.log(hasHeadband ? "OK naruto headband present" : "FAIL headband");
 console.log(familyCard ? "OK family card mentions dad" : "FAIL family card");
 await page.screenshot({ path: `${shots}/2-about.png` });
 
@@ -39,7 +43,7 @@ await page.screenshot({ path: `${shots}/2-about.png` });
 await page.click('[data-lang="pt"]');
 await page.waitForTimeout(900);
 const ptOk = await page.evaluate(() =>
-  document.querySelector(".about-card--family")?.textContent?.includes("pesquisador")
+  document.querySelector(".note--family")?.textContent?.includes("pesquisador")
 );
 console.log(ptOk ? "OK PT translation" : "FAIL PT translation");
 await page.screenshot({ path: `${shots}/3-about-pt.png` });
