@@ -1,5 +1,7 @@
+@import "tailwindcss";
+
 :root {
-  --mono: "JetBrains Mono", monospace;
+  --mono: var(--font-jetbrains), "JetBrains Mono", monospace;
   --bg-a: #010207;
   --bg-b: #030409;
   --bg-c: #080a10;
@@ -16,7 +18,7 @@
   --ice: #cbd5e1;
   --red: #8f1d2c;
   --shadow: rgba(30, 58, 138, 0.24);
-  --font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font: var(--font-inter), "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Fit-to-viewport engine (values updated live by script.js) */
@@ -753,6 +755,244 @@ body.compact-identity .terminal {
   color: var(--muted);
   font-size: clamp(0.78rem, 0.4vw + 0.45vh, 0.88rem);
   line-height: 1.5;
+}
+
+/* ── About — player profile (RPG character sheet) ─────────────────────── */
+.player-card {
+  position: relative;
+  margin-top: clamp(10px, 2vh, 20px);
+  padding: clamp(14px, 2vh, 20px);
+  border: 1px solid rgba(111, 224, 232, 0.22);
+  border-radius: 14px;
+  background: rgba(111, 224, 232, 0.035);
+  overflow: hidden;
+}
+
+.player-card::after {
+  /* subtle scanline, old-console vibe */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, 0.012) 3px 4px);
+}
+
+.player-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.player-card__badge {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: #6fe0e8;
+  border: 1px solid rgba(111, 224, 232, 0.4);
+  animation: playerBlink 2.4s steps(2) infinite;
+}
+
+@keyframes playerBlink {
+  50% { opacity: 0.45; }
+}
+
+.player-card__id { min-width: 0; flex: 1; }
+
+.player-card__id strong {
+  display: block;
+  font-size: clamp(0.94rem, 0.5vw + 0.5vh, 1.08rem);
+  letter-spacing: -0.01em;
+}
+
+.player-card__class {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.player-card__hearts {
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  filter: saturate(0.9);
+}
+
+.player-card__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px clamp(14px, 2vw, 26px);
+  margin-top: clamp(10px, 1.6vh, 16px);
+}
+
+@media (max-width: 700px) {
+  .player-card__stats { grid-template-columns: 1fr; }
+}
+
+.pstat {
+  display: grid;
+  grid-template-columns: minmax(74px, auto) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+}
+
+.pstat__label { color: var(--soft); white-space: nowrap; }
+
+.pstat__bar {
+  position: relative;
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(210, 218, 230, 0.1);
+  overflow: hidden;
+}
+
+.pstat__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #2dd4bf, #6fe0e8);
+  animation: pstatFill 900ms var(--ease) forwards;
+  animation-delay: var(--pd, 300ms);
+}
+
+@keyframes pstatFill {
+  to { width: var(--pv, 50%); }
+}
+
+.pstat__num { color: rgba(111, 224, 232, 0.8); }
+
+.player-card__achv {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: clamp(10px, 1.6vh, 16px);
+}
+
+.achv {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(210, 218, 230, 0.04);
+  font-size: 0.7rem;
+  color: var(--soft);
+  transition: border-color 260ms var(--ease), transform 260ms var(--ease);
+}
+
+.achv:hover { border-color: rgba(111, 224, 232, 0.5); transform: translateY(-1px); }
+.achv em { font-style: normal; }
+
+/* ── About — human cards grid ─────────────────────────────────────────── */
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(10px, 1.4vw, 16px);
+  margin-top: clamp(10px, 1.8vh, 18px);
+}
+
+@media (max-width: 700px) {
+  .about-grid { grid-template-columns: 1fr; }
+}
+
+.about-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: clamp(10px, 1.2vw, 14px);
+  padding: clamp(12px, 1.8vh, 18px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(210, 218, 230, 0.025);
+  overflow: hidden;
+  transition: border-color 320ms var(--ease), background 320ms var(--ease), transform 320ms var(--ease);
+}
+
+.about-card:hover { transform: translateY(-2px); }
+
+/* researcher DNA card spans the full row — it's the star */
+.about-card--family { grid-column: 1 / -1; }
+
+.about-card--family .about-ico { background: rgba(143, 180, 255, 0.1); color: var(--cyan); }
+.about-card--family:hover { border-color: rgba(143, 180, 255, 0.45); background: rgba(143, 180, 255, 0.05); }
+
+.about-card--anime .about-ico { background: rgba(255, 145, 45, 0.1); color: #ff9a3c; }
+.about-card--anime:hover { border-color: rgba(255, 154, 60, 0.45); background: rgba(255, 145, 45, 0.05); }
+
+.about-card--creator .about-ico { background: rgba(244, 114, 182, 0.1); color: #f472b6; }
+.about-card--creator:hover { border-color: rgba(244, 114, 182, 0.4); background: rgba(244, 114, 182, 0.05); }
+
+.about-card--teach .about-ico { background: rgba(52, 211, 153, 0.1); color: #34d399; }
+.about-card--teach:hover { border-color: rgba(52, 211, 153, 0.4); background: rgba(52, 211, 153, 0.05); }
+
+.about-card--drive .about-ico { background: rgba(111, 224, 232, 0.1); color: #6fe0e8; }
+.about-card--drive:hover { border-color: rgba(111, 224, 232, 0.4); background: rgba(111, 224, 232, 0.05); }
+
+.about-ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  font-size: 1.05rem;
+}
+
+.about-card-content { min-width: 0; }
+
+.about-card-content strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: clamp(0.9rem, 0.5vw + 0.5vh, 1.02rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #f5f7fb;
+}
+
+.about-card-content > span {
+  display: block;
+  color: var(--muted);
+  font-size: clamp(0.78rem, 0.4vw + 0.45vh, 0.88rem);
+  line-height: 1.55;
+}
+
+.about-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--cyan);
+  text-decoration: none;
+  transition: gap 240ms var(--ease);
+}
+
+.about-link:hover { gap: 10px; }
+.about-link i { font-size: 0.62rem; }
+
+/* spinning shuriken on the anime card */
+.about-deco {
+  position: absolute;
+  right: -18px;
+  top: -18px;
+  width: 74px;
+  height: 74px;
+  color: rgba(255, 154, 60, 0.16);
+  animation: shurikenSpin 9s linear infinite;
+  pointer-events: none;
+}
+
+.about-deco svg { width: 100%; height: 100%; }
+
+@keyframes shurikenSpin {
+  to { transform: rotate(360deg); }
 }
 
 /* Partners — refined inline links */
