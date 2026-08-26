@@ -884,12 +884,35 @@ body.compact-identity .terminal {
 
 .note-photo img { width: 100%; height: 100%; object-fit: cover; }
 
+/* metallic glint that sweeps across the plate on hover */
+.note-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.28) 48%, transparent 58%);
+  transform: translateX(-120%);
+  transition: transform 720ms var(--ease);
+  pointer-events: none;
+}
+
 .note-band {
   width: 78%;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+  transition: transform 320ms var(--ease);
 }
 
 .note-band svg { width: 100%; height: auto; display: block; }
+
+/* the leaf swirl spins once when you hover the photo */
+.band-swirl {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 900ms var(--ease);
+}
+
+.note--photo:hover .band-swirl { transform: rotate(360deg); }
+.note--photo:hover .note-band { transform: scale(1.05); }
+.note--photo:hover .note-photo::after { transform: translateX(120%); }
 
 .note--photo figcaption {
   margin-top: 9px;
