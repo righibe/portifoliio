@@ -34,8 +34,12 @@ const familyCard = await page.evaluate(() =>
 );
 const noPercent = await page.evaluate(() => !document.querySelector(".pstat, .player-card"));
 console.log(noPercent ? "OK no RPG percentages" : "FAIL RPG stats still present");
-const hasHeadband = await page.evaluate(() => !!document.querySelector(".note-band svg"));
-console.log(hasHeadband ? "OK naruto headband present" : "FAIL headband");
+const hasQuote = await page.evaluate(() => {
+  const q = document.querySelector(".note--quote");
+  return !!q && !!q.querySelector(".quote-shuriken svg") &&
+    q.textContent.includes("Kakashi") && q.textContent.includes("Naruto");
+});
+console.log(hasQuote ? "OK kakashi quote + shuriken + source" : "FAIL quote card");
 console.log(familyCard ? "OK family card mentions dad" : "FAIL family card");
 await page.screenshot({ path: `${shots}/2-about.png` });
 

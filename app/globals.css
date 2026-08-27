@@ -858,69 +858,70 @@ body.compact-identity .terminal {
 .note-link:hover { border-color: var(--cyan); }
 .note-link i { font-size: 0.56rem; }
 
-/* ── polaroid photo note ──────────────────────────────────────────────── */
-.note--photo {
-  width: min(100%, 232px);
-  margin-inline: auto;
-  padding: 11px 11px 9px;
-  background: linear-gradient(180deg, rgba(244, 246, 250, 0.96), rgba(228, 232, 238, 0.92));
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 16px 30px -18px rgba(0, 0, 0, 0.95);
-}
-
-.note--photo .note-pin { color: #5a6472; }
-
-.note-photo {
-  position: relative;
-  aspect-ratio: 5 / 4;
-  border-radius: 2px;
+/* ── favorite-quote note (Naruto) ─────────────────────────────────────── */
+.note--quote {
   overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 42%, #3a4658, #222c39 70%, #171e28);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: linear-gradient(180deg, rgba(143, 180, 255, 0.05), rgba(143, 180, 255, 0.015));
+  border-color: rgba(143, 180, 255, 0.16);
 }
 
-.note-photo img { width: 100%; height: 100%; object-fit: cover; }
+.note--quote blockquote {
+  position: relative;
+  z-index: 1;
+  margin: 4px 0 0;
+  padding-left: 2px;
+  font-size: clamp(0.96rem, 0.5vw + 0.55vh, 1.14rem);
+  font-style: italic;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: #eef2f8;
+}
 
-/* metallic glint that sweeps across the plate on hover */
-.note-photo::after {
-  content: "";
+/* big opening quotation mark */
+.note--quote blockquote::before {
+  content: "\201C";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.28) 48%, transparent 58%);
-  transform: translateX(-120%);
-  transition: transform 720ms var(--ease);
+  top: -0.42em;
+  left: -0.12em;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.6em;
+  line-height: 1;
+  color: rgba(143, 180, 255, 0.22);
+  z-index: -1;
+}
+
+.note--quote figcaption {
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: var(--soft);
+}
+
+/* attribution: "Kakashi Hatake · Naruto" — the source names the anime */
+.quote-src::before { content: " · "; color: rgba(143, 180, 255, 0.55); }
+.quote-src {
+  color: var(--cyan);
+  font-weight: 500;
+}
+
+/* shuriken watermark — the visual "this is Naruto" tell */
+.quote-shuriken {
+  position: absolute;
+  right: -14px;
+  bottom: -14px;
+  width: 92px;
+  height: 92px;
+  color: rgba(143, 180, 255, 0.09);
+  transition: transform 900ms var(--ease), color 320ms var(--ease);
   pointer-events: none;
 }
 
-.note-band {
-  width: 78%;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
-  transition: transform 320ms var(--ease);
-}
+.quote-shuriken svg { width: 100%; height: 100%; display: block; }
 
-.note-band svg { width: 100%; height: auto; display: block; }
-
-/* the leaf swirl spins once when you hover the photo */
-.band-swirl {
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: transform 900ms var(--ease);
-}
-
-.note--photo:hover .band-swirl { transform: rotate(360deg); }
-.note--photo:hover .note-band { transform: scale(1.05); }
-.note--photo:hover .note-photo::after { transform: translateX(120%); }
-
-.note--photo figcaption {
-  margin-top: 9px;
-  font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", var(--mono);
-  font-size: 0.9rem;
-  color: #3b4351;
-  text-align: center;
-  transform: rotate(-1.5deg);
+.note--quote:hover .quote-shuriken {
+  transform: rotate(200deg);
+  color: rgba(143, 180, 255, 0.16);
 }
 
 /* Partners — refined inline links */
