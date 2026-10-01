@@ -6,7 +6,7 @@ const BASE = process.env.BASE_URL || "http://localhost:8347";
 const shots = "scripts/shots";
 const errors = [];
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
 page.on("console", (m) => {
