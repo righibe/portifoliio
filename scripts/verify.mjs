@@ -13,7 +13,7 @@ page.on("console", (m) => {
   if (m.type() === "error") errors.push("console: " + m.text());
 });
 
-await page.goto(BASE, { waitUntil: "networkidle" });
+await page.goto(BASE + "/?debug=1", { waitUntil: "networkidle" });
 await page.waitForTimeout(2500); // let the canvas boot + fonts settle
 
 // 1. Engine booted?
@@ -63,11 +63,17 @@ for (const key of ["journey", "skills", "leadership", "projects", "contact"]) {
 }
 await page.screenshot({ path: `${shots}/4-projects.png` });
 
-// 5. Back home, then start the spaceship game (secret node at ~88%, 84%)
+// 5. Back home, then start the spaceship game. The 3D map reports where its
+// secret node is on screen (?debug=1); the 2D map keeps it at ~88%, 84%.
 await page.click("#panel-close");
-await page.waitForTimeout(1200);
+await page.waitForTimeout(2200); // the camera flies back out of the region first
+const map3d = await page.evaluate(() => window.__map3d && window.__map3d());
+console.log(map3d ? "OK 3D map active" : "INFO 2D map (no WebGL)");
 const vp = page.viewportSize();
-await page.mouse.click(vp.width * 0.88, vp.height * 0.84);
+const secret = map3d ? map3d.find(s => s.key === "secret") : { x: vp.width * 0.88, y: vp.height * 0.84 };
+await page.mouse.move(secret.x, secret.y);
+await page.waitForTimeout(200);
+await page.mouse.click(secret.x, secret.y);
 await page.waitForTimeout(1500);
 const gameOn = await page.evaluate(() =>
   document.getElementById("explore-hud").classList.contains("active")

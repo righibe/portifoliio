@@ -5,19 +5,19 @@ import Image from "next/image";
 import { initEngine } from "@/lib/engine";
 
 // Python snippet shown in the hero terminal (pre-highlighted spans).
-const TERMINAL_CODE = `<code><span style="color:#ff7b72;">class</span> <span style="color:#d2a8ff;">Developer</span>:
-  <span style="color:#ff7b72;">def</span> <span style="color:#d2a8ff;">__init__</span>(<span style="color:#79c0ff;">self</span>):
-    <span style="color:#79c0ff;">self</span>.name  = <span style="color:#a5d6ff;">"Bernardo"</span>
-    <span style="color:#79c0ff;">self</span>.years = <span style="color:#79c0ff;">2</span>
-    <span style="color:#79c0ff;">self</span>.stack = [
-      <span style="color:#a5d6ff;">"Python"</span>,
-      <span style="color:#a5d6ff;">"Java"</span>,
-      <span style="color:#a5d6ff;">"C"</span>,
+const TERMINAL_CODE = `<code><span class="tk">class</span> <span class="tf">Developer</span>:
+  <span class="tk">def</span> <span class="tf">__init__</span>(<span class="tv">self</span>):
+    <span class="tv">self</span>.name  = <span class="ts">"Bernardo"</span>
+    <span class="tv">self</span>.years = <span class="tn">2</span>
+    <span class="tv">self</span>.stack = [
+      <span class="ts">"Python"</span>,
+      <span class="ts">"Java"</span>,
+      <span class="ts">"C"</span>,
     ]
-    <span style="color:#79c0ff;">self</span>.degree = <span style="color:#a5d6ff;">"C.S."</span>
-    <span style="color:#79c0ff;">self</span>.uni = <span style="color:#a5d6ff;">"Unisinos"</span>
+    <span class="tv">self</span>.degree = <span class="ts">"C.S."</span>
+    <span class="tv">self</span>.uni = <span class="ts">"Unisinos"</span>
 
-<span style="color:#ff7b72;">if</span> __name__ == <span style="color:#a5d6ff;">"__main__"</span>:
+<span class="tk">if</span> __name__ == <span class="ts">"__main__"</span>:
   Developer()</code>`;
 
 const NAV_SECTIONS = [
@@ -37,10 +37,11 @@ export default function Experience() {
 
   return (
     <>
+      {/* Desktop: three.js map (loaded on demand). The 2D canvas sits on top —
+          it is the whole map on touch/portrait screens and the game layer on desktop. */}
+      <canvas id="neural-3d" aria-hidden="true" />
       <canvas id="neural-canvas" aria-hidden="true" />
-
-      <div className="aura aura-one" />
-      <div className="aura aura-two" />
+      <div className="cluster-labels" id="cluster-labels" aria-hidden="true" />
 
       <header className="topbar">
         <div className="signal-group">
@@ -114,7 +115,14 @@ export default function Experience() {
             <p className="identity__eyebrow" data-i18n="heroEyebrow">
               Back-End Developer | Machine Learning &amp; Data Analysis
             </p>
-            <h1 data-i18n="heroTitle">Bernardo Righi</h1>
+            <h1 aria-label="Bernardo Righi">
+              <span className="reveal-line" aria-hidden="true">
+                <span>Bernardo</span>
+              </span>{" "}
+              <span className="reveal-line" aria-hidden="true">
+                <span>Righi</span>
+              </span>
+            </h1>
             <p className="identity__copy">
               Back-end developer building APIs, automations and intelligent
               systems with Python and Java — with a strong pull toward Machine
@@ -122,15 +130,15 @@ export default function Experience() {
             </p>
             <div className="identity__stats">
               <div className="istat">
-                <strong>2+</strong>
+                <strong data-count="2" data-suffix="+">2+</strong>
                 <span data-i18n="statYears">years building</span>
               </div>
               <div className="istat">
-                <strong>10+</strong>
+                <strong data-count="10" data-suffix="+">10+</strong>
                 <span data-i18n="statProjects">projects realized</span>
               </div>
               <div className="istat">
-                <strong>Top 6</strong>
+                <strong data-count="6" data-prefix="Top ">Top 6</strong>
                 <span data-i18n="statCommunity">Brazil dev community</span>
               </div>
             </div>
@@ -161,9 +169,9 @@ export default function Experience() {
 
             <div className="terminal" id="terminal">
               <div className="terminal__bar">
-                <span className="terminal__dot" style={{ background: "#ff5f57" }} />
-                <span className="terminal__dot" style={{ background: "#febc2e" }} />
-                <span className="terminal__dot" style={{ background: "#28c840" }} />
+                <span className="terminal__dot" />
+                <span className="terminal__dot" />
+                <span className="terminal__dot" />
                 <span className="terminal__title">~/bernardo/developer.py</span>
               </div>
               <div className="terminal__body">

@@ -6,6 +6,8 @@ const nextConfig = {
   // The canvas engine mutates the DOM directly; StrictMode's double-mount in
   // dev would double-init listeners, so we guard in code and disable it here.
   reactStrictMode: false,
+  // Hide the Next.js dev-tools badge ("N") in `npm run dev` — dev only anyway.
+  devIndicators: false,
 };
 
 export default nextConfig;
