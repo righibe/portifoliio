@@ -1,23 +1,25 @@
 @import "tailwindcss";
 
 /* ─── Design tokens ──────────────────────────────────────────────────────────
-   Ink on black, one signal color. The accent only marks what is live: hover,
-   active, the thing you can act on. No gradients, no glass blur — hairlines,
+   Silver ink on black, one dark-blue signal colour (no neon). The accent only
+   marks what is live: hover, active, the thing you can act on. No gradients, no glass blur — hairlines,
    type and motion carry the design. */
 :root {
   --bg: #0b0b0c;
   --surface: #111113;
   --surface-2: #161618;
-  --ink: #edede8;
+  --ink: #e4e7eb;
   --text: var(--ink);
-  --soft: rgba(237, 237, 232, 0.68);
+  --soft: rgba(228, 231, 235, 0.68);
   --muted: #8b8b86;
-  --faint: rgba(237, 237, 232, 0.42);
-  --line: rgba(237, 237, 232, 0.1);
-  --line-strong: rgba(237, 237, 232, 0.22);
-  --accent: #38d9ff;
-  --accent-soft: rgba(56, 217, 255, 0.12);
-  --accent-line: rgba(56, 217, 255, 0.5);
+  --faint: rgba(228, 231, 235, 0.42);
+  --line: rgba(228, 231, 235, 0.1);
+  --line-strong: rgba(228, 231, 235, 0.22);
+  --accent: #5b7fbf;            /* steel blue: lines, indicators, hover */
+  --accent-deep: #1f3a6b;       /* navy: filled tags / buttons */
+  --silver: #c8cfd9;            /* text on navy fills, highlights */
+  --accent-soft: rgba(91, 127, 191, 0.14);
+  --accent-line: rgba(91, 127, 191, 0.55);
 
   --font: var(--font-inter), "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --display: var(--font-display), var(--font-inter), system-ui, sans-serif;
@@ -53,8 +55,8 @@ body {
 }
 
 ::selection {
-  background: var(--accent);
-  color: var(--bg);
+  background: var(--accent-deep);
+  color: var(--silver);
 }
 
 button,
@@ -591,13 +593,13 @@ button {
 }
 
 .cv-download:hover {
-  background: var(--accent);
+  background: var(--accent-deep);
   border-color: var(--accent);
-  color: var(--bg);
+  color: var(--silver);
 }
 
 .cv-download:hover i {
-  color: var(--bg);
+  color: var(--silver);
 }
 
 /* ─── cvlint highlight ───────────────────────────────────────────────────── */
@@ -620,8 +622,8 @@ button {
 .cv-promo__tag {
   padding: 3px 7px;
   border-radius: 2px;
-  background: var(--accent);
-  color: var(--bg);
+  background: var(--accent-deep);
+  color: var(--silver);
   font-family: var(--mono);
   font-size: 0.6rem;
   font-weight: 500;
@@ -1172,8 +1174,8 @@ body.compact-identity .terminal {
   width: 58px;
   height: 17px;
   transform: translateX(-50%) rotate(-2.5deg);
-  background: rgba(237, 237, 232, 0.08);
-  border: 1px solid rgba(237, 237, 232, 0.06);
+  background: rgba(228, 231, 235, 0.08);
+  border: 1px solid rgba(228, 231, 235, 0.06);
   border-radius: 1px;
 }
 
@@ -1279,7 +1281,7 @@ body.compact-identity .terminal {
   bottom: -14px;
   width: 92px;
   height: 92px;
-  color: rgba(237, 237, 232, 0.06);
+  color: rgba(228, 231, 235, 0.06);
   transition: transform 900ms var(--ease), color 320ms var(--ease);
   pointer-events: none;
 }
@@ -1288,7 +1290,7 @@ body.compact-identity .terminal {
 
 .note--quote:hover .quote-shuriken {
   transform: rotate(200deg);
-  color: rgba(56, 217, 255, 0.22);
+  color: rgba(91, 127, 191, 0.3);
 }
 
 /* Partners — refined inline links */
@@ -1360,7 +1362,7 @@ body.compact-identity .terminal {
   transition: width 420ms var(--ease);
 }
 
-.project-card:hover { transform: translateY(-3px); background: rgba(237, 237, 232, 0.02); }
+.project-card:hover { transform: translateY(-3px); background: rgba(228, 231, 235, 0.02); }
 .project-card:hover::after { width: 100%; }
 
 .work-idx {
@@ -1666,9 +1668,9 @@ body.compact-identity .terminal {
 
 .community-invite:hover,
 .modal-link:hover {
-  background: var(--accent);
+  background: var(--accent-deep);
   border-color: var(--accent);
-  color: var(--bg);
+  color: var(--silver);
 }
 
 /* ─── Hint ───────────────────────────────────────────────────────────────── */
@@ -1776,9 +1778,9 @@ body.compact-identity .terminal {
 }
 
 .explore-exit-btn:hover {
-  background: var(--accent);
+  background: var(--accent-deep);
   border-color: var(--accent);
-  color: var(--bg);
+  color: var(--silver);
   transform: translateX(-50%) translateY(-2px);
 }
 
