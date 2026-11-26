@@ -1217,17 +1217,17 @@ body.compact-identity .terminal {
 }
 
 /* Anchored to the card's TOP: inside the notes' multi-column layout, "bottom"
-   resolves against the wrong box. Raised, the image's lower ~28% stays behind
-   the card. */
+   resolves against the wrong box. Raised, the whole image sits just above the
+   card (only its bottom edge tucked behind it, like a photo held up). */
 .quote-holder {
   position: absolute;
   z-index: 0;
   left: 50%;
   top: 0;
-  width: min(230px, 60%);
+  width: min(170px, 45%);
   pointer-events: none;
   opacity: 0;
-  transform: translate(-50%, -58%) scale(0.85);
+  transform: translate(-50%, -70%) scale(0.85);
   transform-origin: 50% 100%;
   transition: transform 520ms cubic-bezier(0.2, 0.9, 0.25, 1.15), opacity 260ms var(--ease);
   filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.55));
@@ -1238,7 +1238,7 @@ body.compact-identity .terminal {
 
 .quote-wrap:hover .quote-holder {
   opacity: 1;
-  transform: translate(-50%, -72%) scale(1);
+  transform: translate(-50%, calc(-100% + 6px)) scale(1);
 }
 
 .note--quote {
